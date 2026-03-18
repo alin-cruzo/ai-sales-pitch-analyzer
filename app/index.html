@@ -16,7 +16,8 @@
             feedback.</p>
 
         <script>
-            const API_BASE_URL = "https://ai-sales-pitch-analyzer-xxxx.onrender.com"; // <-- PASTE YOUR RENDER LINK HERE
+            // Example: "https://ai-sales-pitch-analyzer-abcd.onrender.com"
+            const API_BASE_URL = "https://ai-sales-pitch-analyzer.onrender.com"; // <--- CHANGE THIS LINE!
         </script>
 
         <div class="space-y-6">
@@ -27,7 +28,6 @@
                     <span class="text-5xl block mb-4">📁</span>
                     <span id="uploadText" class="text-lg font-medium text-blue-400">Click to upload audio</span>
                     <p class="text-sm text-slate-500 mt-2">MP3, M4A, or WAV (Max 10MB)</p>
-
                     <p id="fileNameDisplay" class="mt-4 text-md font-bold text-green-400 hidden"></p>
                 </label>
             </div>
@@ -61,7 +61,6 @@
     </div>
 
     <script>
-        // NEW FUNCTION: Updates UI when a file is selected
         function updateFileName() {
             const fileInput = document.getElementById('audioInput');
             const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -94,12 +93,18 @@
             formData.append("file", fileInput.files[0]);
 
             try {
-                const response = await fetch(`${API_BASE_URL}/analyze-pitch`, {
+                // Formatting the URL properly
+                const url = API_BASE_URL.endsWith('/') ? `${API_BASE_URL}analyze-pitch` : `${API_BASE_URL}/analyze-pitch`;
+
+                const response = await fetch(url, {
                     method: "POST",
                     body: formData
                 });
 
-                if (!response.ok) throw new Error("Server Error - Render might be starting up.");
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server Error: ${response.status} - ${errorText}`);
+                }
 
                 const data = await response.json();
 
@@ -107,11 +112,13 @@
                 document.getElementById('feedbackText').innerText = data.feedback;
 
                 const audioPlayer = document.getElementById('audioFeedback');
-                audioPlayer.src = `${API_BASE_URL}${data.audio_path}`;
+                const audioUrl = API_BASE_URL.endsWith('/') ? `${API_BASE_URL}${data.audio_path.substring(1)}` : `${API_BASE_URL}${data.audio_path}`;
+                audioPlayer.src = audioUrl;
 
                 results.classList.remove('hidden');
             } catch (error) {
-                alert("Error: " + error.message);
+                alert("Error connecting to server. Make sure your Render backend is Live. Details: " + error.message);
+                console.error(error);
             } finally {
                 loading.classList.add('hidden');
                 btn.disabled = false;

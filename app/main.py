@@ -4,8 +4,10 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-# Import your custom AI logic from your ai_services.py file
-import ai_services
+# ==========================================
+# THE FIX: Tell Render exactly where to find this file!
+# ==========================================
+from app import ai_services
 
 app = FastAPI(title="AI Sales Pitch Coach API")
 
