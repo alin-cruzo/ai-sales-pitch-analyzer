@@ -4,105 +4,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Pitch Coach</title>
+    <title>AI Sales Pitch Analyzer</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center py-12 px-4">
 
-    <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg p-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-2">🎙️ AI Sales Pitch Coach</h1>
-        <p class="text-gray-500 mb-8">Upload your pitch and get instant, AI-driven feedback on your closing strategy.
-        </p>
+    <div class="max-w-2xl w-full bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700">
+        <h1 class="text-3xl font-bold text-center mb-2">🎙️ AI Sales Pitch Coach</h1>
+        <p class="text-slate-400 text-center mb-8">Upload your pitch and get instant psychological analysis and audio
+            feedback.</p>
 
-        <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Audio File (.mp3, .m4a, .wav)</label>
-            <input type="file" id="audioInput" accept="audio/*"
-                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition">
+        <script>
+            const API_BASE_URL = "https://ai-sales-pitch-analyzer-xxxx.onrender.com"; // PASTE YOUR RENDER LINK HERE
+        </script>
+
+        <div class="space-y-6">
+            <div
+                class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors">
+                <input type="file" id="audioInput" accept="audio/*" class="hidden">
+                <label for="audioInput" class="cursor-pointer block">
+                    <span class="text-5xl block mb-4">📁</span>
+                    <span class="text-lg font-medium text-blue-400">Click to upload audio</span>
+                    <p class="text-sm text-slate-500 mt-2">MP3, M4A, or WAV (Max 10MB)</p>
+                </label>
+            </div>
+
+            <button onclick="analyzePitch()" id="analyzeBtn"
+                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                Analyze Pitch 🚀
+            </button>
         </div>
 
-        <button onclick="analyzePitch()" id="analyzeBtn"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
-            Analyze Pitch
-        </button>
+        <div id="results" class="mt-10 hidden space-y-6">
+            <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                <h3 class="text-blue-400 font-bold mb-2 uppercase text-xs tracking-widest">Transcript</h3>
+                <p id="transcriptText" class="text-slate-300 leading-relaxed"></p>
+            </div>
 
-        <div id="loading" class="hidden text-center mt-6">
-            <p class="text-blue-600 font-semibold animate-pulse">🤖 AI is listening and analyzing...</p>
+            <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                <h3 class="text-green-400 font-bold mb-2 uppercase text-xs tracking-widest">AI Coaching Feedback</h3>
+                <p id="feedbackText" class="text-slate-300 leading-relaxed italic"></p>
+                <div class="mt-4 pt-4 border-t border-slate-800">
+                    <p class="text-xs text-slate-500 mb-2">Listen to your Coach:</p>
+                    <audio id="audioFeedback" controls class="w-full h-8"></audio>
+                </div>
+            </div>
         </div>
 
-        <div id="results" class="hidden mt-8 space-y-6 border-t pt-6">
-            <div>
-                <h3 class="text-lg font-bold text-gray-800">📝 Transcript</h3>
-                <p id="transcriptText" class="text-gray-600 bg-gray-50 p-4 rounded-lg mt-2 text-sm italic"></p>
-            </div>
-
-            <div>
-                <h3 class="text-lg font-bold text-gray-800">💡 Coaching Feedback</h3>
-                <p id="feedbackText" class="text-gray-600 bg-blue-50 p-4 rounded-lg mt-2 text-sm"></p>
-            </div>
-
-            <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">🎧 Listen to Feedback (1.25x Speed)</h3>
-                <audio id="audioPlayer" controls class="w-full"></audio>
-            </div>
+        <div id="loading" class="hidden text-center mt-8">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            <p class="text-slate-500 mt-2">Coach is listening... This may take a minute on the free tier.</p>
         </div>
     </div>
 
     <script>
         async function analyzePitch() {
             const fileInput = document.getElementById('audioInput');
-            const file = fileInput.files[0];
+            const btn = document.getElementById('analyzeBtn');
+            const results = document.getElementById('results');
+            const loading = document.getElementById('loading');
 
-            if (!file) { alert("Please select an audio file first!"); return; }
+            if (!fileInput.files[0]) {
+                alert("Please select an audio file first!");
+                return;
+            }
 
-            // UI Updates
-            document.getElementById('analyzeBtn').classList.add('hidden');
-            document.getElementById('loading').classList.remove('hidden');
-            document.getElementById('results').classList.add('hidden');
+            // UI State: Loading
+            loading.classList.remove('hidden');
+            results.classList.add('hidden');
+            btn.disabled = true;
 
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append("file", fileInput.files[0]);
 
             try {
-                // Send to your Python Backend
-                const response = await fetch("http://127.0.0.1:8000/api/v1/analyze-pitch", {
+                // We use the API_BASE_URL defined at the top
+                const response = await fetch(`${API_BASE_URL}/analyze-pitch`, {
                     method: "POST",
                     body: formData
                 });
 
+                if (!response.ok) throw new Error("Server Error - Render might be starting up.");
+
                 const data = await response.json();
 
-                // Populate the Results
-                document.getElementById('transcriptText').innerText = `"${data.transcript}"`;
-                document.getElementById('feedbackText').innerText = data.feedback_text;
+                // UI State: Show Results
+                document.getElementById('transcriptText').innerText = data.transcript;
+                document.getElementById('feedbackText').innerText = data.feedback;
 
-                // Fix the audio path slashes for the web
-                let rawPath = data.feedback_audio_url || data.feedback_audio_file;
-                let cleanPath = rawPath.replace(/\\/g, '/'); // Change Windows slashes to Web slashes
+                // Set Audio Source
+                const audioPlayer = document.getElementById('audioFeedback');
+                audioPlayer.src = `${API_BASE_URL}${data.audio_path}`;
 
-                // Remove any accidental double slashes at the beginning
-                if (cleanPath.startsWith('/')) {
-                    cleanPath = cleanPath.substring(1);
-                }
-
-                // Set the audio player source and SPEED
-                const player = document.getElementById('audioPlayer');
-                player.src = `http://127.0.0.1:8000/${cleanPath}`;
-
-                // The Magic Speed Lines (1.25x faster)
-                player.defaultPlaybackRate = 1.25;
-                player.playbackRate = 1.25;
-
-                // Show Results
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('results').classList.remove('hidden');
-                document.getElementById('analyzeBtn').classList.remove('hidden');
-
+                results.classList.remove('hidden');
             } catch (error) {
-                alert("Something went wrong! Make sure your Python server is running.");
-                console.error(error);
-                document.getElementById('loading').classList.add('hidden');
-                document.getElementById('analyzeBtn').classList.remove('hidden');
+                alert("Error: " + error.message);
+            } finally {
+                loading.classList.add('hidden');
+                btn.disabled = false;
             }
         }
     </script>
