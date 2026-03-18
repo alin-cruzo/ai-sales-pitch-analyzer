@@ -2,6 +2,7 @@
 
 A full-stack AI application designed to evaluate and elevate sales pitches. This tool allows users to upload audio recordings of their sales calls and receive instant, actionable coaching on their closing strategy, tone, and the underlying psychology of the conversation.
 
+
 ## ✨ Features
 
 * **Lightning-Fast Transcription:** Uses Groq's Whisper model to convert raw audio pitches (including filler words and pauses) into highly accurate text transcripts.
@@ -16,9 +17,5 @@ A full-stack AI application designed to evaluate and elevate sales pitches. This
 * **Audio Processing:** gTTS (Google Text-to-Speech), `python-multipart`
 * **Frontend:** HTML5, JavaScript, Tailwind CSS
 
-## 🚀 How to Run Locally
+**🚀 Live Demo:** [Try the AI Sales Pitch Coach Here](https://alin-cruzo.github.io/ai-sales-pitch-analyzer/app/)
 
-### 1. Clone the Repository
-```bash
-git clone [https://github.com/alincruzo9122-max/ai-sales-pitch-analyzer.git](https://github.com/alincruzo9122-max/ai-sales-pitch-analyzer.git)
-cd ai-sales-pitch-analyzer
