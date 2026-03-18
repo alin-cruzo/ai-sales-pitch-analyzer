@@ -1,0 +1,12 @@
+# Environments
+venv/
+__pycache__/
+
+# Secrets
+.env
+
+# Database and Audio Files
+*.db
+saved_audio/
+temp_*
++6

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Pitch Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-6">
+
+    <div class="max-w-2xl w-full bg-white rounded-xl shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">🎙️ AI Sales Pitch Coach</h1>
+        <p class="text-gray-500 mb-8">Upload your pitch and get instant, AI-driven feedback on your closing strategy.
+        </p>
+
+        <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Audio File (.mp3, .m4a, .wav)</label>
+            <input type="file" id="audioInput" accept="audio/*"
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition">
+        </div>
+
+        <button onclick="analyzePitch()" id="analyzeBtn"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+            Analyze Pitch
+        </button>
+
+        <div id="loading" class="hidden text-center mt-6">
+            <p class="text-blue-600 font-semibold animate-pulse">🤖 AI is listening and analyzing...</p>
+        </div>
+
+        <div id="results" class="hidden mt-8 space-y-6 border-t pt-6">
+            <div>
+                <h3 class="text-lg font-bold text-gray-800">📝 Transcript</h3>
+                <p id="transcriptText" class="text-gray-600 bg-gray-50 p-4 rounded-lg mt-2 text-sm italic"></p>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-gray-800">💡 Coaching Feedback</h3>
+                <p id="feedbackText" class="text-gray-600 bg-blue-50 p-4 rounded-lg mt-2 text-sm"></p>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-gray-800 mb-2">🎧 Listen to Feedback (1.25x Speed)</h3>
+                <audio id="audioPlayer" controls class="w-full"></audio>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function analyzePitch() {
+            const fileInput = document.getElementById('audioInput');
+            const file = fileInput.files[0];
+
+            if (!file) { alert("Please select an audio file first!"); return; }
+
+            // UI Updates
+            document.getElementById('analyzeBtn').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+                // Send to your Python Backend
+                const response = await fetch("http://127.0.0.1:8000/api/v1/analyze-pitch", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Populate the Results
+                document.getElementById('transcriptText').innerText = `"${data.transcript}"`;
+                document.getElementById('feedbackText').innerText = data.feedback_text;
+
+                // Fix the audio path slashes for the web
+                let rawPath = data.feedback_audio_url || data.feedback_audio_file;
+                let cleanPath = rawPath.replace(/\\/g, '/'); // Change Windows slashes to Web slashes
+
+                // Remove any accidental double slashes at the beginning
+                if (cleanPath.startsWith('/')) {
+                    cleanPath = cleanPath.substring(1);
+                }
+
+                // Set the audio player source and SPEED
+                const player = document.getElementById('audioPlayer');
+                player.src = `http://127.0.0.1:8000/${cleanPath}`;
+
+                // The Magic Speed Lines (1.25x faster)
+                player.defaultPlaybackRate = 1.25;
+                player.playbackRate = 1.25;
+
+                // Show Results
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('results').classList.remove('hidden');
+                document.getElementById('analyzeBtn').classList.remove('hidden');
+
+            } catch (error) {
+                alert("Something went wrong! Make sure your Python server is running.");
+                console.error(error);
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('analyzeBtn').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+
+</html>
