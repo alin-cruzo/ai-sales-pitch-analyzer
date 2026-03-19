@@ -1,580 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <meta name="description" content="AI Sales Pitch Coach – Instant psychological analysis, scoring, and personalized coaching for your sales pitches.">
-    <title>AI Sales Pitch Coach</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        /* ═══════════════════════════════════
-           BASE
-        ═══════════════════════════════════ */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html { font-size: 16px; }
-        html, body { height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body {
-            background: linear-gradient(145deg, #f3f0ff 0%, #faf0ff 40%, #f0f5ff 70%, #e8f4ff 100%);
-            color: #1a1236;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* ═══════════════════════════════════
-           BACKGROUND BLOBS
-        ═══════════════════════════════════ */
-        .blob {
-            position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
-            animation: blobFloat 18s ease-in-out infinite;
-        }
-        .blob-1{ width:600px;height:600px;background:radial-gradient(ellipse,rgba(167,139,250,.28) 0%,transparent 65%);top:-180px;left:-140px;animation-delay:0s; }
-        .blob-2{ width:500px;height:500px;background:radial-gradient(ellipse,rgba(236,72,153,.15) 0%,transparent 65%);bottom:-120px;right:-100px;animation-delay:-8s; }
-        .blob-3{ width:380px;height:380px;background:radial-gradient(ellipse,rgba(99,102,241,.12) 0%,transparent 65%);top:40%;left:45%;animation-delay:-15s; }
-        @keyframes blobFloat {
-            0%,100%{ transform:translate(0,0) scale(1); }
-            33%    { transform:translate(22px,-32px) scale(1.05); }
-            66%    { transform:translate(-16px,22px) scale(0.96); }
-        }
-
-        /* ═══════════════════════════════════
-           APP SHELL
-        ═══════════════════════════════════ */
-        .app { display:flex; min-height:100vh; position:relative; z-index:10; }
-
-        /* ── SIDEBAR ───────────────────────── */
-        .sidebar {
-            width: 340px; flex-shrink: 0;
-            background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(18px);
-            border-right: 1px solid rgba(139,92,246,.14);
-            padding: 52px 0;
-            display: flex; flex-direction: column;
-        }
-        .sidebar-logo {
-            display: flex; align-items: center; gap: 16px;
-            padding: 0 36px 44px;
-            font-size: 1.7rem; font-weight: 800; color: #5b21b6;
-        }
-        .sidebar-logo .logo-ic {
-            width: 58px; height: 58px; border-radius: 17px;
-            background: linear-gradient(135deg,#7c3aed,#ec4899);
-            display:flex;align-items:center;justify-content:center;font-size:30px;
-        }
-        .nav-section { padding: 0 20px; margin-bottom: 12px; }
-        .nav-label { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: #94a3b8; padding: 0 16px 12px; }
-        .nav-item {
-            display: flex; align-items: center; gap: 16px;
-            padding: 18px 18px; border-radius: 15px; font-size: 1.2rem; font-weight: 500; color: #64748b;
-            cursor: pointer; transition: all 0.2s ease; margin-bottom: 6px;
-            text-decoration: none;
-        }
-        .nav-item:hover  { background: rgba(124,58,237,.08); color: #7c3aed; }
-        .nav-item.active { background: linear-gradient(120deg,rgba(124,58,237,.14),rgba(236,72,153,.08)); color: #7c3aed; font-weight: 600; }
-        .nav-ic { font-size: 26px; width: 32px; text-align: center; }
-
-        /* ── MAIN CONTENT ──────────────────── */
-        .content { flex: 1; overflow-y: auto; padding: 64px 72px; display: flex; flex-direction: column; gap: 72px; }
-
-        /* ── TOP SECTION: upload + score panel ── */
-        .top-section { display: grid; grid-template-columns: 1fr 560px; gap: 40px; align-items: start; }
-
-        /* Upload panel */
-        .upload-panel { }
-        .upload-panel h1 { font-size: 4.2rem; font-weight: 800; line-height: 1.1; margin-bottom: 18px; color: #0f0a2e; }
-        .upload-panel > p { font-size: 1.3rem; color: #64748b; margin-bottom: 40px; line-height: 1.75; }
-        .upload-panel > p a { color: #7c3aed; text-decoration: underline; cursor: pointer; }
-
-        .drop-zone {
-            border: 2.5px dashed rgba(124,58,237,.3);
-            border-radius: 26px; padding: 72px 48px; text-align: center; cursor: pointer;
-            background: rgba(255,255,255,.65); backdrop-filter: blur(12px);
-            transition: all 0.3s ease; margin-bottom: 32px; position: relative;
-        }
-        .drop-zone:hover, .drop-zone.over { border-color: #7c3aed; background: rgba(124,58,237,.05); transform: translateY(-3px); box-shadow: 0 16px 48px rgba(124,58,237,.14); }
-        label[for="fileIn"] { position:absolute;inset:0;cursor:pointer;border-radius:24px;z-index:2; }
-        .drop-inner { position:relative;z-index:1;pointer-events:none; }
-        .drop-ring {
-            width: 120px; height: 120px; border-radius: 50%;
-            background: linear-gradient(135deg,#ede9fe,#ddd6fe);
-            display:flex;align-items:center;justify-content:center;margin:0 auto 24px;
-            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        .drop-zone:hover .drop-ring { transform:scale(1.14) translateY(-6px); }
-        .drop-ring svg { width:54px; height:54px; color:#7c3aed; }
-        .drop-lbl { font-size:1.5rem; font-weight:600; color:#1a1236; margin-bottom:10px; }
-        .drop-lbl a { color:#7c3aed; text-decoration:underline; }
-        .drop-hint { font-size:1.1rem; color:#94a3b8; }
-        .file-chip {
-            display:none; align-items:center; gap:10px;
-            background:linear-gradient(120deg,#d1fae5,#a7f3d0); color:#065f46;
-            border-radius:99px; padding:12px 28px; font-weight:600; font-size:1.05rem;
-            margin:22px auto 0; width:max-content; border:1px solid rgba(16,185,129,.3);
-            animation:chipPop .4s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        @keyframes chipPop { from{opacity:0;transform:scale(.6)} to{opacity:1;transform:scale(1)} }
-
-        .btn-analyze {
-            width: 100%; padding: 28px 36px; border:none; border-radius:20px; cursor:pointer;
-            font-family:inherit; font-size:1.5rem; font-weight:700; color:#fff;
-            background: linear-gradient(120deg,#7c3aed 0%,#ec4899 55%,#7c3aed 110%);
-            background-size: 200% 100%;
-            box-shadow: 0 10px 32px rgba(124,58,237,.35);
-            display:flex; align-items:center; justify-content:center; gap:10px;
-            transition: all 0.4s ease; position:relative; overflow:hidden;
-        }
-        .btn-analyze::after { content:''; position:absolute;inset:0; background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,.16) 58%,transparent 78%); transform:translateX(-110%); transition:transform .55s; }
-        .btn-analyze:hover::after { transform:translateX(110%); }
-        .btn-analyze:hover:not(:disabled) { background-position:right; box-shadow:0 18px 44px rgba(236,72,153,.42); transform:translateY(-2px); }
-        .btn-analyze:disabled { background:#e5e7eb; color:#9ca3af; cursor:not-allowed; box-shadow:none; transform:none; }
-        @keyframes spin { to{transform:rotate(360deg)} }
-
-        /* Mini feature teaser cards */
-        .mini-features { display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:40px; }
-        .mini-card {
-            background:rgba(255,255,255,.72); border:1px solid rgba(139,92,246,.14); border-radius:22px;
-            padding:30px 26px; display:flex; align-items:flex-start; gap:20px;
-            box-shadow:0 2px 12px rgba(124,58,237,.06);
-            transition:transform 0.25s,box-shadow 0.25s;
-        }
-        .mini-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(124,58,237,.12); }
-        .mini-ic { width:68px; height:68px; border-radius:18px; display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0; }
-        .mini-card h4 { font-size:1.3rem; font-weight:700; color:#0f0a2e; margin-bottom:8px; }
-        .mini-card p  { font-size:1.05rem; color:#64748b; line-height:1.65; }
-
-        /* ── SCORE PANEL ───────────────────── */
-        .score-panel {
-            background: rgba(255,255,255,.85); backdrop-filter:blur(16px);
-            border: 1.5px solid rgba(139,92,246,.18); border-radius:32px;
-            padding:48px; box-shadow:0 12px 48px rgba(124,58,237,.13);
-            position:relative; overflow:hidden;
-        }
-        .score-top { display:flex; align-items:center; gap:30px; margin-bottom:36px; }
-        .score-ring {
-            width:160px; height:160px; border-radius:50%;
-            background:conic-gradient(#7c3aed calc(var(--pct)*1%),#ede9fe 0);
-            display:flex;align-items:center;justify-content:center;
-            position:relative; flex-shrink:0;
-        }
-        .score-ring::before { content:''; position:absolute; width:122px;height:122px;border-radius:50%;background:white; }
-        .score-num { position:relative;z-index:1; font-size:3rem; font-weight:800; color:#7c3aed; }
-        .score-info h3 { font-size:1.7rem; font-weight:700; margin-bottom:8px; }
-        .score-dots { display:flex; gap:8px; margin-bottom:8px; }
-        .sdot { width:13px;height:13px;border-radius:50%;background:#ede9fe; }
-        .sdot.active { background:#7c3aed; }
-        .score-info p { font-size:1.05rem; color:#64748b; }
-
-        /* Metric bars */
-        .metric { margin-bottom:24px; }
-        .metric-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-        .metric-lbl { font-size:1.15rem; font-weight:600; color:#374151; }
-        .metric-val { font-size:1.15rem; font-weight:700; color:#7c3aed; }
-        .metric-bar { height:13px; border-radius:99px; background:#f3f0ff; overflow:hidden; }
-        .metric-fill { height:100%; border-radius:99px; width:0; transition:width 1.2s cubic-bezier(.4,0,.2,1); }
-
-        /* Remarks */
-        .remarks { margin-top:28px; background:#f8f5ff; border-radius:20px; padding:24px 26px; border:1px solid rgba(124,58,237,.12); }
-        .remarks-lbl { font-size:0.95rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#7c3aed; margin-bottom:10px; }
-        .remarks p { font-size:1.1rem; color:#374151; line-height:1.75; }
-
-        /* Coach avatar */
-        .avatar-wrap {
-            position:absolute; bottom:0; right:0; width:230px; height:280px;
-            overflow:hidden; pointer-events:none;
-        }
-        .avatar-wrap img { width:100%; height:100%; object-fit:cover; object-position:top; filter:drop-shadow(0 4px 16px rgba(124,58,237,.22)); }
-
-        /* ── FEATURES SECTION ──────────────── */
-        .features-section { }
-        .features-section h2 { font-size:3rem; font-weight:800; text-align:center; margin-bottom:44px; color:#0f0a2e; }
-        .features-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:26px; }
-        .feat-card {
-            background:rgba(255,255,255,.78); backdrop-filter:blur(10px);
-            border:1px solid rgba(139,92,246,.14); border-radius:28px;
-            padding:44px 34px;
-            box-shadow:0 4px 20px rgba(124,58,237,.08);
-            transition:transform 0.3s,box-shadow 0.3s;
-        }
-        .feat-card:hover { transform:translateY(-6px); box-shadow:0 20px 50px rgba(124,58,237,.16); }
-        .feat-ic { width:88px; height:88px; border-radius:24px; display:flex;align-items:center;justify-content:center;font-size:42px; margin-bottom:24px; }
-        .feat-card h3 { font-size:1.4rem; font-weight:700; margin-bottom:14px; color:#0f0a2e; }
-        .feat-card p  { font-size:1.1rem; color:#64748b; line-height:1.75; }
-
-        /* ── LOADER ────────────────────────── */
-        .loader { display:none; flex-direction:column; align-items:center; padding:64px 0; }
-        .rings { position:relative; width:120px; height:120px; margin-bottom:32px; }
-        .rings div { position:absolute;inset:0;border-radius:50%;border:4px solid transparent;animation:spin 1.2s linear infinite; }
-        .rings div:nth-child(1){ border-top-color:#7c3aed; }
-        .rings div:nth-child(2){ border-bottom-color:#ec4899;inset:16px;animation-duration:1.9s;animation-direction:reverse; }
-        .rings div:nth-child(3){ border-left-color:#f59e0b;inset:32px;animation-duration:2.5s; }
-        .rings-center { position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px; }
-        .loader-t { font-size:1.6rem; font-weight:700; margin-bottom:12px; }
-        .loader-s { font-size:1.2rem; color:#64748b; text-align:center; max-width:420px; line-height:1.65; }
-
-        /* ── RESULTS TRANSCRIPT/FEEDBACK ───── */
-        .results-row { display:none; grid-template-columns:1fr 1fr; gap:26px; animation:fadeUp .5s ease; }
-        .rcard {
-            background:rgba(255,255,255,.85); border:1px solid rgba(139,92,246,.14); border-radius:26px;
-            padding:40px; box-shadow:0 6px 24px rgba(124,58,237,.08);
-            display:flex; flex-direction:column;
-        }
-        .rcard-head { display:flex;align-items:center;gap:16px;margin-bottom:22px; }
-        .rcard-ic { width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
-        .rcard-lbl { font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase; }
-        .rcard-body { font-size:1.15rem;line-height:1.85;color:#374151;max-height:340px;overflow-y:auto; }
-        .rcard-body::-webkit-scrollbar{width:6px}
-        .rcard-body::-webkit-scrollbar-thumb{background:#c4b5fd;border-radius:99px}
-
-        .audio-bar {
-            display:none; align-items:center; gap:26px;
-            background:rgba(255,255,255,.85); border:1px solid rgba(139,92,246,.14); border-radius:26px;
-            padding:34px 40px; box-shadow:0 6px 24px rgba(124,58,237,.08);
-            animation:fadeUp .5s ease;
-        }
-        .audio-ic { width:72px;height:72px;border-radius:20px;background:linear-gradient(135deg,#d1fae5,#6ee7b7);display:flex;align-items:center;justify-content:center;font-size:34px;flex-shrink:0; }
-        .audio-lbl { font-size:1rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#64748b;margin-bottom:12px;display:flex;align-items:center;gap:9px; }
-        .adot { width:10px;height:10px;border-radius:50%;background:#10b981;animation:pulse 2s ease-in-out infinite; }
-        .audio-player-w { background:#f8f5ff;border-radius:16px;padding:14px 18px;border:1px solid rgba(124,58,237,.1); }
-        audio { width:100%;height:48px; }
-
-        @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.3)} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-
-        @media(max-width:1100px){
-            .features-grid{grid-template-columns:1fr 1fr}
-            .top-section{grid-template-columns:1fr}
-            .score-panel{max-width:480px}
-        }
-        @media(max-width:780px){
-            .sidebar{display:none}
-            .content{padding:28px 20px}
-            .mini-features{grid-template-columns:1fr}
-            .results-row{grid-template-columns:1fr}
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Sales Pitch Coach</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
 
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
+<body class="bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
 
-    <div class="app">
+  <div class="flex">
 
-        <!-- ════ SIDEBAR ════════════════════════════════ -->
-        <nav class="sidebar">
-            <div class="sidebar-logo">
-                <div class="logo-ic">🎙️</div>
-                <span>PitchCoach</span>
-            </div>
-            <div class="nav-section">
-                <div class="nav-label">Main</div>
-                <a class="nav-item active" onclick="showSection('upload')">
-                    <span class="nav-ic">📊</span> Pitch Analysis
-                </a>
-            </div>
-            <div class="nav-section" style="margin-top:8px;">
-                <div class="nav-label">Features</div>
-                <a class="nav-item" onclick="showSection('insight')">
-                    <span class="nav-ic">🧠</span> Insight analysis
-                </a>
-                <a class="nav-item" onclick="showSection('transcript')">
-                    <span class="nav-ic">📝</span> Pitch transcription
-                </a>
-                <a class="nav-item" onclick="showSection('coaching')">
-                    <span class="nav-ic">🎯</span> Analyze coaching
-                </a>
-                <a class="nav-item" onclick="showSection('scoring')">
-                    <span class="nav-ic">🚀</span> Scoring &amp; strategy
-                </a>
-            </div>
-        </nav>
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-lg p-5">
+      <h1 class="text-xl font-bold text-purple-600 mb-6">PitchCoach</h1>
 
-        <!-- ════ MAIN CONTENT ════════════════════════════ -->
-        <div class="content">
+      <nav class="space-y-4 text-gray-600">
+        <a class="block font-medium text-purple-600">Pitch Analysis</a>
+        <a class="block hover:text-purple-600">Insights</a>
+        <a class="block hover:text-purple-600">Transcription</a>
+        <a class="block hover:text-purple-600">Coaching</a>
+        <a class="block hover:text-purple-600">Scoring</a>
+      </nav>
+    </aside>
 
-            <!-- ── TOP: Upload + Score panel ─────────── -->
-            <div class="top-section">
-                <div class="upload-panel">
-                    <h1>Analyze your pitch</h1>
-                    <p>Drop an audio file of a pitch or <a onclick="document.getElementById('fileIn').click()">browse</a> to upload. Get AI-driven feedback along with tips on improvement.</p>
+    <!-- Main Content -->
+    <main class="flex-1 p-10 max-w-6xl mx-auto">
 
-                    <script> const API_BASE_URL = "https://ai-sales-pitch-analyzer.onrender.com"; </script>
+      <!-- Heading -->
+      <h2 class="text-3xl font-bold mb-4">Analyze your pitch</h2>
+      <p class="text-gray-500 mb-6">
+        Upload your audio and get AI-powered insights instantly.
+      </p>
 
-                    <div id="dropZone" class="drop-zone">
-                        <input type="file" id="fileIn" accept="audio/*" style="display:none" onchange="onFile()">
-                        <label for="fileIn"></label>
-                        <div class="drop-inner">
-                            <div class="drop-ring">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6H16a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                            </div>
-                            <p class="drop-lbl">Drag &amp; drop audio file or <a>Browse</a></p>
-                            <p class="drop-hint">Supported formats (MP3, WAV, M4A) — file size limit max 10MB</p>
-                            <div class="file-chip" id="fileChip">
-                                <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                                <span id="fileName"></span>
-                            </div>
-                        </div>
-                    </div>
+      <!-- Upload Box -->
+      <div class="border-2 border-dashed rounded-xl p-10 text-center bg-white shadow-sm">
+        <p class="text-gray-400">Drag & Drop or Browse file</p>
+      </div>
 
-                    <button class="btn-analyze" id="analyzeBtn" onclick="run()">
-                        Analyze My Pitch &nbsp;→
-                    </button>
+      <!-- CTA -->
+      <button
+        class="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:opacity-90">
+        Analyze My Pitch →
+      </button>
 
-                    <!-- Loader -->
-                    <div class="loader" id="loader">
-                        <div class="rings"><div></div><div></div><div></div><div class="rings-center">🎤</div></div>
-                        <p class="loader-t">Analyzing your delivery…</p>
-                        <p class="loader-s">The AI coach is studying tone, pacing, and persuasion triggers. Hold tight.</p>
-                    </div>
+      <!-- Results Section -->
+      <div class="grid grid-cols-3 gap-6 mt-10">
 
-                    <!-- Mini feature teasers -->
-                    <div class="mini-features">
-                        <div class="mini-card">
-                            <div class="mini-ic" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);">🧠</div>
-                            <div>
-                                <h4>Psychological Insight</h4>
-                                <p>Get an analysis of your pitch's emotional appeal and areas needing improvement.</p>
-                            </div>
-                        </div>
-                        <div class="mini-card">
-                            <div class="mini-ic" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);">📝</div>
-                            <div>
-                                <h4>Speech Transcription</h4>
-                                <p>Receive a full transcript of your pitch with key highlights and suggestions for refinement.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <div class="bg-white p-5 rounded-xl shadow">
+          <h3 class="font-semibold">Confidence</h3>
+          <div class="h-2 bg-gray-200 rounded mt-2">
+            <div class="h-2 bg-purple-500 w-2/3 rounded"></div>
+          </div>
+        </div>
 
-                <!-- ── SCORE PANEL ─────────────────── -->
-                <div class="score-panel" id="scorePanel">
-                    <div class="score-top">
-                        <div class="score-ring" id="scoreRing" style="--pct:0">
-                            <span class="score-num" id="scoreNum">--</span>
-                        </div>
-                        <div class="score-info">
-                            <h3>Analyze</h3>
-                            <div class="score-dots">
-                                <div class="sdot active"></div><div class="sdot active"></div>
-                                <div class="sdot"></div><div class="sdot"></div><div class="sdot"></div>
-                            </div>
-                            <p id="scoreSubtext">Upload your pitch to see scores.</p>
-                        </div>
-                    </div>
+        <div class="bg-white p-5 rounded-xl shadow">
+          <h3 class="font-semibold">Clarity</h3>
+          <div class="h-2 bg-gray-200 rounded mt-2">
+            <div class="h-2 bg-green-400 w-3/4 rounded"></div>
+          </div>
+        </div>
 
-                    <div class="metric">
-                        <div class="metric-row">
-                            <span class="metric-lbl">Persuasion</span>
-                            <span class="metric-val" id="pVal">--</span>
-                        </div>
-                        <div class="metric-bar"><div class="metric-fill" id="pBar" style="background:linear-gradient(90deg,#7c3aed,#a78bfa)"></div></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-row">
-                            <span class="metric-lbl">Structure</span>
-                            <span class="metric-val" id="sVal">--</span>
-                        </div>
-                        <div class="metric-bar"><div class="metric-fill" id="sBar" style="background:linear-gradient(90deg,#6366f1,#818cf8)"></div></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-row">
-                            <span class="metric-lbl">Confidence</span>
-                            <span class="metric-val" id="cVal">--</span>
-                        </div>
-                        <div class="metric-bar"><div class="metric-fill" id="cBar" style="background:linear-gradient(90deg,#ec4899,#f9a8d4)"></div></div>
-                    </div>
-                    <div class="metric">
-                        <div class="metric-row">
-                            <span class="metric-lbl">Clarity</span>
-                            <span class="metric-val" id="clVal">--</span>
-                        </div>
-                        <div class="metric-bar"><div class="metric-fill" id="clBar" style="background:linear-gradient(90deg,#10b981,#6ee7b7)"></div></div>
-                    </div>
+        <div class="bg-white p-5 rounded-xl shadow">
+          <h3 class="font-semibold">Structure</h3>
+          <div class="h-2 bg-gray-200 rounded mt-2">
+            <div class="h-2 bg-blue-400 w-1/2 rounded"></div>
+          </div>
+        </div>
 
-                    <div class="remarks">
-                        <div class="remarks-lbl">Remarks</div>
-                        <p id="remarksText">Analyze your pitch to receive personalized coaching remarks from the AI.</p>
-                    </div>
+      </div>
 
-                    <!-- Coach avatar -->
-                    <div class="avatar-wrap">
-                        <img src="coach_avatar.png" alt="AI Coach">
-                    </div>
-                </div>
-            </div>
+      <!-- Insights -->
+      <div class="mt-10 bg-white p-6 rounded-xl shadow">
+        <h3 class="font-semibold mb-2">AI Coaching Feedback</h3>
+        <ul class="list-disc ml-5 text-gray-600">
+          <li>Improve confidence in tone</li>
+          <li>Use stronger closing statements</li>
+          <li>Engage audience with questions</li>
+        </ul>
+      </div>
 
-            <!-- ── RESULTS: transcript + feedback side by side ── -->
-            <div class="results-row" id="resultsRow">
-                <div class="rcard">
-                    <div class="rcard-head">
-                        <div class="rcard-ic" style="background:#ede9fe;">
-                            <svg width="15" height="15" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        </div>
-                        <span class="rcard-lbl" style="color:#7c3aed;">Transcript</span>
-                    </div>
-                    <p class="rcard-body" id="transcriptText"></p>
-                </div>
-                <div class="rcard">
-                    <div class="rcard-head">
-                        <div class="rcard-ic" style="background:#d1fae5;">
-                            <svg width="15" height="15" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                        </div>
-                        <span class="rcard-lbl" style="color:#059669;">AI Coaching Feedback</span>
-                    </div>
-                    <p class="rcard-body" id="feedbackText"></p>
-                </div>
-            </div>
+    </main>
 
-            <!-- Audio bar -->
-            <div class="audio-bar" id="audioBar">
-                <div class="audio-ic">🎧</div>
-                <div style="flex:1">
-                    <div class="audio-lbl"><div class="adot"></div>Coach Audio Feedback</div>
-                    <div class="audio-player-w"><audio id="audioEl" controls></audio></div>
-                </div>
-            </div>
+  </div>
 
-            <!-- ── FEATURES SECTION ────────────────── -->
-            <div class="features-section">
-                <h2>Boost your sales pitch performance</h2>
-                <div class="features-grid">
-                    <div class="feat-card">
-                        <div class="feat-ic" style="background:linear-gradient(135deg,#ede9fe,#ddd6fe);">🧠</div>
-                        <h3>Psychological Insight Analysis</h3>
-                        <p>Understand the emotional appeal of your pitch for deeper connections and improved persuasion.</p>
-                    </div>
-                    <div class="feat-card">
-                        <div class="feat-ic" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0);">📝</div>
-                        <h3>Personalized Speech Transcription</h3>
-                        <p>Get a detailed text version of your pitch with key highlights and areas for improvement.</p>
-                    </div>
-                    <div class="feat-card">
-                        <div class="feat-ic" style="background:linear-gradient(135deg,#fef3c7,#fde68a);">🎯</div>
-                        <h3>Tailored Actionable Coaching</h3>
-                        <p>Receive specific, actionable advice and strategies to make your pitches more persuasive.</p>
-                    </div>
-                    <div class="feat-card">
-                        <div class="feat-ic" style="background:linear-gradient(135deg,#fce7f3,#fbcfe8);">🚀</div>
-                        <h3>Performance Scoring &amp; Strategy</h3>
-                        <p>Get scores and strategic advice to enhance your pitch delivery and effectiveness.</p>
-                    </div>
-                </div>
-            </div>
-
-        </div><!-- end .content -->
-    </div><!-- end .app -->
-
-    <script>
-        /* ── Drag & Drop ─────────────────────────────── */
-        const dz = document.getElementById('dropZone');
-        const fi = document.getElementById('fileIn');
-        ['dragenter','dragover','dragleave','drop'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }));
-        ['dragenter','dragover'].forEach(e => dz.addEventListener(e, () => dz.classList.add('over')));
-        ['dragleave','drop'].forEach(e     => dz.addEventListener(e, () => dz.classList.remove('over')));
-        dz.addEventListener('drop', e => { if (e.dataTransfer.files[0]) { fi.files = e.dataTransfer.files; onFile(); } });
-
-        function onFile() {
-            if (!fi.files[0]) return;
-            document.getElementById('fileName').textContent = fi.files[0].name;
-            document.getElementById('fileChip').style.display = 'inline-flex';
-        }
-
-        /* ── Sidebar nav ──────────────────────────────── */
-        function showSection(id) {
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            document.querySelector('.content').scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        /* ── Animate score bars ───────────────────────── */
-        function animateScores(persuasion, structure, confidence, clarity) {
-            const overall = Math.round((persuasion + structure + confidence + clarity) / 4);
-
-            // Ring
-            const ring = document.getElementById('scoreRing');
-            let pct = 0;
-            const step = () => { pct = Math.min(pct + 1, overall); ring.style.setProperty('--pct', pct); if (pct < overall) requestAnimationFrame(step); };
-            requestAnimationFrame(step);
-
-            // Number count-up
-            let n = 0;
-            const numEl = document.getElementById('scoreNum');
-            const countUp = setInterval(() => { n = Math.min(n + 2, overall); numEl.textContent = n; if (n >= overall) clearInterval(countUp); }, 20);
-
-            // Bars (animate after short delay)
-            setTimeout(() => {
-                document.getElementById('pVal').textContent  = persuasion + '%';
-                document.getElementById('sVal').textContent  = structure  + '%';
-                document.getElementById('cVal').textContent  = confidence + '%';
-                document.getElementById('clVal').textContent = clarity    + '%';
-                document.getElementById('pBar').style.width  = persuasion + '%';
-                document.getElementById('sBar').style.width  = structure  + '%';
-                document.getElementById('cBar').style.width  = confidence + '%';
-                document.getElementById('clBar').style.width = clarity    + '%';
-            }, 200);
-
-            document.getElementById('scoreSubtext').textContent = 'Your pitch scores and performance breakdown.';
-        }
-
-        /* ── Extract rough scores from feedback text ─── */
-        function extractScores(feedback) {
-            // Simple heuristic: scan for keywords and assign scores
-            const f = feedback.toLowerCase();
-            const score = (keywords, base, bonus) => {
-                let s = base;
-                keywords.forEach(k => { if (f.includes(k)) s += bonus; });
-                return Math.min(95, Math.max(30, s));
-            };
-            return {
-                persuasion: score(['compel','urgen','benefit','value','persuad'], 52, 8),
-                structure:  score(['structure','clear','open','clos','flow','organiz'], 55, 7),
-                confidence: score(['confident','asserti','strong','direct','энергич'], 50, 9),
-                clarity:    score(['clear','concise','understand','simple','specific'], 58, 7),
-            };
-        }
-
-        /* ── Analyze ─────────────────────────────────── */
-        async function run() {
-            if (!fi.files[0]) { alert('Please select an audio file first!'); return; }
-            const btn    = document.getElementById('analyzeBtn');
-            const loader = document.getElementById('loader');
-            const rRow   = document.getElementById('resultsRow');
-            const aBar   = document.getElementById('audioBar');
-
-            loader.style.display = 'flex'; rRow.style.display = 'none'; aBar.style.display = 'none';
-            btn.disabled = true;
-            btn.innerHTML = `<svg style="animation:spin 1s linear infinite" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="3" opacity=".3"/><path stroke-linecap="round" stroke-width="3" d="M12 2a10 10 0 0110 10" opacity=".8"/></svg>&nbsp; Processing…`;
-
-            const fd = new FormData(); fd.append('file', fi.files[0]);
-            try {
-                const url = API_BASE_URL.replace(/\/$/, '') + '/analyze-pitch';
-                const res = await fetch(url, { method:'POST', body:fd });
-                if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
-                const d = await res.json();
-
-                document.getElementById('transcriptText').innerText = d.transcript;
-                document.getElementById('feedbackText').innerText   = d.feedback;
-                document.getElementById('audioEl').src = API_BASE_URL.replace(/\/$/, '') + d.audio_path;
-
-                // Update score panel
-                const { persuasion, structure, confidence, clarity } = extractScores(d.feedback);
-                animateScores(persuasion, structure, confidence, clarity);
-
-                // Update remarks (first 2 sentences of feedback)
-                const sentences = d.feedback.split(/(?<=[.!?])\s+/);
-                document.getElementById('remarksText').textContent = sentences.slice(0, 2).join(' ');
-
-                rRow.style.display = 'grid'; aBar.style.display = 'flex';
-                setTimeout(() => rRow.scrollIntoView({ behavior:'smooth', block:'nearest' }), 80);
-            } catch(e) {
-                alert('Error: ' + e.message); console.error(e);
-            } finally {
-                loader.style.display = 'none'; btn.disabled = false;
-                btn.innerHTML = 'Analyze My Pitch &nbsp;→';
-            }
-        }
-    </script>
 </body>
+
 </html>
