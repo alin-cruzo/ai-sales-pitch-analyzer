@@ -1,401 +1,605 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI Sales Pitch Analyzer - Get instant psychological analysis and audio feedback on your sales pitches.">
-    <title>AI Sales Pitch Analyzer | Elevate Your Pitch</title>
-    
-    <!-- Modern Font: Outfit -->
+    <meta name="description" content="AI Sales Pitch Analyzer – Get instant psychological analysis and audio feedback on your sales pitches.">
+    <title>AI Sales Pitch Coach | Elevate Your Pitch</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#f0f3ff',
-                            100: '#e4eafa',
-                            200: '#cddbfe',
-                            300: '#a3bffa',
-                            400: '#7599f5',
-                            500: '#5272ef',
-                            600: '#3850e3',
-                            700: '#2c3bcc',
-                            800: '#2732a6',
-                            900: '#242e84',
-                            950: '#161a51',
-                        }
-                    },
-                    animation: {
-                        'blob': 'blob 7s infinite',
-                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'slide-up': 'slide-up 0.5s ease-out',
-                        'fade-in': 'fade-in 0.5s ease-out forwards',
-                    },
-                    keyframes: {
-                        blob: {
-                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
-                        },
-                        'slide-up': {
-                            '0%': { transform: 'translateY(20px)', opacity: 0 },
-                            '100%': { transform: 'translateY(0)', opacity: 1 },
-                        },
-                        'fade-in': {
-                            '0%': { opacity: 0 },
-                            '100%': { opacity: 1 },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brand:      #5B5FF8;
+            --brand-dark: #3B3DBF;
+            --accent:     #F0522B;
+            --bg:         #F5F7FF;
+            --surface:    #FFFFFF;
+            --border:     rgba(91,95,248,0.15);
+            --text:       #0F0F2D;
+            --muted:      #6B7280;
+        }
+
         body {
-            background-color: #030712;
-            color: #f8fafc;
-            /* Smooth background mesh gradient representation */
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(56, 80, 227, 0.12), transparent 40%),
-                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.12), transparent 40%),
-                radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.08), transparent 40%);
-        }
-        
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-        }
-        
-        .text-gradient {
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-image: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
         }
 
-        .text-gradient-green {
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-image: linear-gradient(135deg, #34d399, #10b981);
+        /* ── Animated canvas background ─────────────────────── */
+        #bgCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
+        /* Animated gradient orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.35;
+            animation: floatOrb 12s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .orb1 { width: 520px; height: 520px; background: radial-gradient(circle, #a5b4fc, #818cf8); top: -180px; left: -140px; animation-delay: 0s; }
+        .orb2 { width: 420px; height: 420px; background: radial-gradient(circle, #fbcfe8, #f9a8d4); top: 60%; right: -130px; animation-delay: -4s; }
+        .orb3 { width: 360px; height: 360px; background: radial-gradient(circle, #fde68a, #fcd34d); bottom: -100px; left: 30%; animation-delay: -8s; }
+        .orb4 { width: 280px; height: 280px; background: radial-gradient(circle, #6ee7b7, #34d399); top: 35%; left: -80px; animation-delay: -2s; }
+
+        @keyframes floatOrb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33%  { transform: translate(30px, -40px) scale(1.08); }
+            66%  { transform: translate(-20px, 30px) scale(0.94); }
+        }
+
+        /* ── Main card ────────────────────────────────────────── */
+        .card {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1.5px solid var(--border);
+            border-radius: 32px;
+            box-shadow:
+                0 4px 6px rgba(91,95,248,0.06),
+                0 20px 60px rgba(91,95,248,0.12),
+                0 0 0 1px rgba(255,255,255,0.6) inset;
+            width: 100%;
+            max-width: 760px;
+            padding: 56px 60px;
+            margin: 40px 20px;
+            animation: cardIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(36px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ── Header ───────────────────────────────────────────── */
+        .icon-badge {
+            width: 80px; height: 80px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, var(--brand), #a78bfa);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 38px;
+            margin: 0 auto 28px;
+            box-shadow: 0 12px 32px rgba(91,95,248,0.35);
+            animation: iconPop 0.9s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+            transition: transform 0.3s ease;
+        }
+        .icon-badge:hover { transform: rotate(8deg) scale(1.08); }
+
+        @keyframes iconPop {
+            from { opacity: 0; transform: scale(0.5) rotate(-15deg); }
+            to   { opacity: 1; transform: scale(1) rotate(0); }
+        }
+
+        h1 {
+            font-size: clamp(2.4rem, 5vw, 3.4rem);
+            font-weight: 800;
+            line-height: 1.15;
+            text-align: center;
+            letter-spacing: -0.5px;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+        h1 .highlight {
+            background: linear-gradient(120deg, var(--brand), #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 1.15rem;
+            font-weight: 400;
+            max-width: 520px;
+            margin: 0 auto 48px;
+            line-height: 1.6;
+        }
+
+        /* ── Upload zone ──────────────────────────────────────── */
         .upload-zone {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            background: rgba(255, 255, 255, 0.02);
-            border: 2px dashed rgba(148, 163, 184, 0.2);
+            border: 2.5px dashed rgba(91,95,248,0.3);
+            border-radius: 20px;
+            padding: 48px 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            background: rgba(91,95,248,0.03);
+            margin-bottom: 28px;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .upload-zone:hover {
-            border-color: rgba(99, 102, 241, 0.6);
-            background: rgba(99, 102, 241, 0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(91,95,248,0.06), rgba(236,72,153,0.04));
+            opacity: 0;
+            transition: opacity 0.3s;
         }
-        
-        .upload-zone.dragover {
-            border-color: #60a5fa;
-            background: rgba(96, 165, 250, 0.1);
-            transform: scale(1.02);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #4f46e5, #ec4899);
-            background-size: 200% 200%;
-            transition: all 0.3s ease;
+        .upload-zone:hover::before, .upload-zone.dragover::before { opacity: 1; }
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--brand);
+            transform: translateY(-3px);
+            box-shadow: 0 16px 40px rgba(91,95,248,0.15);
         }
 
-        .btn-primary:hover:not(:disabled) {
+        .upload-icon-wrap {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+            transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .upload-zone:hover .upload-icon-wrap { transform: scale(1.15) translateY(-4px); }
+        .upload-icon-wrap svg { width: 38px; height: 38px; color: var(--brand); }
+
+        .upload-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+        .upload-title span { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
+        .upload-hint { font-size: 0.9rem; color: var(--muted); }
+
+        .file-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: linear-gradient(120deg, #d1fae5, #a7f3d0);
+            color: #065f46;
+            border-radius: 999px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            border: 1px solid #6ee7b7;
+            animation: chipIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes chipIn {
+            from { opacity: 0; transform: scale(0.7); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+
+        /* ── Button ───────────────────────────────────────────── */
+        .btn-analyze {
+            width: 100%;
+            padding: 22px 32px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            background: linear-gradient(120deg, var(--brand), #ec4899, var(--brand));
+            background-size: 200% 100%;
+            transition: all 0.4s ease;
+            box-shadow: 0 8px 30px rgba(91,95,248,0.35);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-analyze::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.12) 60%, transparent 80%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        .btn-analyze:hover::after { transform: translateX(100%); }
+        .btn-analyze:hover:not(:disabled) {
             background-position: right center;
-            box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.4);
+            box-shadow: 0 14px 40px rgba(236,72,153,0.4);
             transform: translateY(-2px);
         }
-
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .btn-primary:disabled {
-            background: #334155;
-            color: #94a3b8;
+        .btn-analyze:active:not(:disabled) { transform: translateY(0); }
+        .btn-analyze:disabled {
+            background: #e5e7eb;
+            color: #9ca3af;
             cursor: not-allowed;
-            opacity: 0.7;
             box-shadow: none;
+            transform: none;
         }
 
-        /* Custom Audio Player Styling */
-        audio::-webkit-media-controls-panel {
-            background-color: #1e293b;
+        /* ── Loader ───────────────────────────────────────────── */
+        .loader-wrap {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0 20px;
+            animation: fadeIn 0.5s ease;
         }
-        audio::-webkit-media-controls-current-time-display,
-        audio::-webkit-media-controls-time-remaining-display {
-            color: #f8fafc;
+        .loader-rings {
+            position: relative;
+            width: 80px; height: 80px;
+            margin-bottom: 24px;
         }
+        .loader-rings div {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            animation: spin 1.2s linear infinite;
+        }
+        .loader-rings div:nth-child(1) { border-top-color: var(--brand); }
+        .loader-rings div:nth-child(2) { border-bottom-color: #ec4899; animation-duration: 1.8s; animation-direction: reverse; inset: 10px; }
+        .loader-rings div:nth-child(3) { border-left-color: #f59e0b; animation-duration: 2.4s; inset: 20px; }
+        .loader-icon {
+            position: absolute;
+            inset: 0; display: flex; align-items: center; justify-content: center;
+            font-size: 24px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.4} }
+
+        .loader-title { font-size: 1.25rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .loader-sub { color: var(--muted); font-size: 0.95rem; text-align: center; max-width: 340px; line-height: 1.6; }
+
+        /* ── Results ──────────────────────────────────────────── */
+        .results-wrap { display: none; margin-top: 40px; animation: slideUp 0.5s ease; }
+        .results-divider {
+            text-align: center;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .results-divider::before {
+            content: '';
+            position: absolute;
+            left: 0; right: 0; top: 50%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+        .results-divider span {
+            position: relative;
+            background: var(--surface);
+            padding: 0 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .result-card {
+            background: rgba(255,255,255,0.85);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(91,95,248,0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .result-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 32px rgba(91,95,248,0.15);
+        }
+
+        .result-card-header {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 16px;
+        }
+        .result-card-icon {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .result-card-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .result-text {
+            font-size: 1rem;
+            line-height: 1.75;
+            color: #374151;
+            font-weight: 400;
+        }
+
+        .audio-section { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .audio-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem; font-weight: 600; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+        .audio-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 2s ease-in-out infinite; }
+        .audio-wrap {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        audio { width: 100%; height: 40px; }
+
+        /* ── Footer ───────────────────────────────────────────── */
+        footer {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            padding-bottom: 32px;
+            opacity: 0.75;
+        }
+
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── Floating particles (canvas driven) ──────────────── */
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 selection:bg-brand-500 selection:text-white relative font-sans">
+<body>
+    <!-- Animated orbs -->
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+    <div class="orb orb4"></div>
 
-    <!-- Decorative floating blobs -->
-    <div class="fixed top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full mix-blend-screen filter blur-[80px] animate-blob z-[-1] pointer-events-none"></div>
-    <div class="fixed top-40 right-10 w-72 h-72 bg-blue-500/20 rounded-full mix-blend-screen filter blur-[80px] animate-blob animation-delay-2000 z-[-1] pointer-events-none"></div>
-    <div class="fixed -bottom-20 left-1/2 w-80 h-80 bg-pink-500/20 rounded-full mix-blend-screen filter blur-[80px] animate-blob animation-delay-4000 translate-x-1/2 z-[-1] pointer-events-none"></div>
+    <!-- Particles canvas -->
+    <canvas id="bgCanvas"></canvas>
 
-    <main class="w-full max-w-3xl glass-panel p-8 sm:p-12 rounded-[2rem] relative z-10 animate-fade-in group">
-        
-        <header class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 mb-6 shadow-xl shadow-indigo-500/20 transform-gpu transition-transform hover:rotate-6">
-                <span class="text-3xl">🎙️</span>
-            </div>
-            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">
-                AI Sales Pitch <span class="text-gradient">Coach</span>
-            </h1>
-            <p class="text-slate-400 text-lg max-w-xl mx-auto font-light">
-                Elevate your delivery. Upload your pitch for instant psychological analysis and personalized audio feedback.
-            </p>
-        </header>
+    <main class="card">
+        <!-- Icon badge -->
+        <div class="icon-badge">🎙️</div>
+
+        <h1>AI Sales Pitch <span class="highlight">Coach</span></h1>
+        <p class="subtitle">
+            Elevate your delivery. Upload your sales audio and get instant AI-powered psychological analysis with personalized coaching feedback.
+        </p>
 
         <script>
-            // Example: "https://ai-sales-pitch-analyzer-abcd.onrender.com"
-            const API_BASE_URL = "https://ai-sales-pitch-analyzer.onrender.com"; // <--- CHANGE THIS LINE IF NEEDED
+            const API_BASE_URL = "https://ai-sales-pitch-analyzer.onrender.com";
         </script>
 
-        <div class="space-y-8">
-            <!-- Upload Area -->
-            <div id="dropZone" class="upload-zone rounded-2xl p-10 text-center cursor-pointer relative overflow-hidden group">
-                <input type="file" id="audioInput" accept="audio/*" class="hidden" onchange="handleFileSelect()">
-                <label for="audioInput" class="cursor-pointer flex flex-col items-center justify-center absolute inset-0 w-full h-full z-10"></label>
-                
-                <div class="relative z-0 pointer-events-none flex flex-col items-center">
-                    <div class="w-20 h-20 rounded-full bg-slate-800/50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-inner">
-                        <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                    </div>
-                    <span id="uploadText" class="text-xl font-medium text-slate-200 mb-2">Drag & drop your audio, or <span class="text-indigo-400">browse</span></span>
-                    <p class="text-sm text-slate-500 font-light">Supports MP3, M4A, WAV (Max 10MB)</p>
-                    
-                    <div id="fileInfoDisplay" class="mt-6 flex flex-col items-center hidden animate-slide-up">
-                        <div class="flex items-center space-x-2 text-emerald-400 bg-emerald-400/10 px-4 py-2 rounded-full border border-emerald-400/20">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                            <span id="fileNameDisplay" class="font-medium text-sm truncate max-w-[200px] sm:max-w-xs"></span>
-                        </div>
-                    </div>
+        <!-- Upload zone -->
+        <div id="dropZone" class="upload-zone">
+            <input type="file" id="audioInput" accept="audio/*" class="hidden" style="display:none" onchange="handleFileSelect()">
+            <label for="audioInput" style="position:absolute;inset:0;cursor:pointer;z-index:2;"></label>
+            <div style="position:relative;z-index:1;pointer-events:none;">
+                <div class="upload-icon-wrap">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                </div>
+                <p class="upload-title" id="uploadText">Drag &amp; drop your audio, or <span>browse</span></p>
+                <p class="upload-hint">Supports MP3, M4A, WAV &mdash; Max 10 MB</p>
+                <div id="fileChip" class="file-chip" style="display:none;">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    <span id="fileNameDisplay"></span>
                 </div>
             </div>
-
-            <button onclick="analyzePitch()" id="analyzeBtn" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-xl shadow-lg flex items-center justify-center space-x-2 text-lg disabled:opacity-50">
-                <span>Analyze Pitch</span>
-                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-            </button>
         </div>
 
-        <!-- Loading State -->
-        <div id="loading" class="hidden flex-col items-center justify-center mt-12 mb-4 animate-fade-in">
-            <div class="relative w-20 h-20 mb-6">
-                <!-- Outer glowing ring -->
-                <div class="absolute inset-0 rounded-full border-t-2 border-indigo-500 animate-spin"></div>
-                <!-- Inner glowing ring reversing -->
-                <div class="absolute inset-2 rounded-full border-b-2 border-pink-500 animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
-                <!-- Center pulse icon -->
-                <div class="absolute inset-0 flex items-center justify-center text-indigo-400 animate-pulse">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
-                </div>
+        <button onclick="analyzePitch()" id="analyzeBtn" class="btn-analyze">
+            <span>Analyze My Pitch</span>
+            <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </button>
+
+        <!-- Loader -->
+        <div class="loader-wrap" id="loading">
+            <div class="loader-rings">
+                <div></div><div></div><div></div>
+                <div class="loader-icon">🎤</div>
             </div>
-            <h3 class="text-xl font-semibold mb-2">Analyzing your delivery...</h3>
-            <p class="text-slate-400 text-sm text-center max-w-sm">
-                Our AI coach is examining your tone, pacing, and psychological triggers. This may take a moment.
-            </p>
+            <p class="loader-title">Analyzing your delivery…</p>
+            <p class="loader-sub">Our AI coach is studying your tone, pacing, and psychological triggers. This may take a moment.</p>
         </div>
 
-        <!-- Results UI -->
-        <div id="results" class="mt-12 hidden space-y-8 animate-slide-up">
-            <div class="border-t border-slate-700/50 pt-8 mb-4">
-                <h2 class="text-2xl font-bold text-center">Analysis Complete ✨</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 gap-6">
-                <!-- Transcript Card -->
-                <div class="bg-slate-800/40 p-6 sm:p-8 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors shadow-lg relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                    <div class="flex items-center mb-4">
-                        <div class="w-8 h-8 rounded bg-indigo-500/20 text-indigo-400 flex items-center justify-center mr-3">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        </div>
-                        <h3 class="text-indigo-400 font-bold uppercase text-xs tracking-widest">Transcript</h3>
-                    </div>
-                    <p id="transcriptText" class="text-slate-300 leading-relaxed font-light"></p>
-                </div>
+        <!-- Results -->
+        <div class="results-wrap" id="results">
+            <div class="results-divider"><span>✨ Analysis Complete</span></div>
 
-                <!-- Feedback Card -->
-                <div class="bg-slate-800/40 p-6 sm:p-8 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors shadow-lg relative overflow-hidden group">
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
-                    <div class="flex items-center mb-4">
-                        <div class="w-8 h-8 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center mr-3">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                        </div>
-                        <h3 class="text-emerald-400 font-bold uppercase text-xs tracking-widest">AI Coaching Feedback</h3>
+            <!-- Transcript -->
+            <div class="result-card">
+                <div class="result-card-header">
+                    <div class="result-card-icon" style="background:#ede9fe;">
+                        <svg width="18" height="18" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
-                    <p id="feedbackText" class="text-slate-300 leading-relaxed font-light mb-6"></p>
-                    
-                    <div class="pt-6 border-t border-slate-700/50">
-                        <p class="text-xs text-slate-400 mb-3 font-medium uppercase tracking-wider flex items-center">
-                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span>
-                            Listen to your Coach Audio
-                        </p>
-                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700">
-                            <audio id="audioFeedback" controls class="w-full h-10"></audio>
-                        </div>
+                    <span class="result-card-label" style="color:#7c3aed;">Transcript</span>
+                </div>
+                <p id="transcriptText" class="result-text"></p>
+            </div>
+
+            <!-- Feedback + Audio -->
+            <div class="result-card">
+                <div class="result-card-header">
+                    <div class="result-card-icon" style="background:#d1fae5;">
+                        <svg width="18" height="18" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    </div>
+                    <span class="result-card-label" style="color:#059669;">AI Coaching Feedback</span>
+                </div>
+                <p id="feedbackText" class="result-text"></p>
+
+                <div class="audio-section">
+                    <div class="audio-label">
+                        <div class="audio-dot"></div>
+                        Listen to Your Coach
+                    </div>
+                    <div class="audio-wrap">
+                        <audio id="audioFeedback" controls></audio>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <footer class="mt-12 text-center text-slate-500 text-sm font-light z-10 animate-fade-in" style="animation-delay: 0.2s;">
-        <p>Built for ambitious sales professionals. Powered by AI.</p>
-    </footer>
+    <footer>Built for ambitious sales professionals &mdash; Powered by AI</footer>
 
     <script>
-        // Drag and drop functionality
-        const dropZone = document.getElementById('dropZone');
+        /* ── Particle background ────────────────────────────── */
+        (function () {
+            const canvas = document.getElementById('bgCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, particles = [];
+
+            function resize() {
+                W = canvas.width  = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const colors = ['#818cf8','#a78bfa','#f9a8d4','#6ee7b7','#fcd34d'];
+
+            function createParticle() {
+                return {
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    r: Math.random() * 3.5 + 1,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    alpha: Math.random() * 0.5 + 0.2,
+                };
+            }
+
+            for (let i = 0; i < 80; i++) particles.push(createParticle());
+
+            function draw() {
+                ctx.clearRect(0, 0, W, H);
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fill();
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+
+                    if (p.x < -10) p.x = W + 10;
+                    if (p.x > W + 10) p.x = -10;
+                    if (p.y < -10) p.y = H + 10;
+                    if (p.y > H + 10) p.y = -10;
+                });
+                ctx.globalAlpha = 1;
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+
+        /* ── Drag & Drop ────────────────────────────────────── */
+        const dropZone  = document.getElementById('dropZone');
         const fileInput = document.getElementById('audioInput');
 
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-            document.body.addEventListener(eventName, preventDefaults, false);
+        ['dragenter','dragover','dragleave','drop'].forEach(ev => {
+            dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
         });
+        ['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.add('dragover')));
+        ['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.remove('dragover')));
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, highlight, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, unhighlight, false);
-        });
-
-        function highlight() {
-            dropZone.classList.add('dragover');
-        }
-
-        function unhighlight() {
-            dropZone.classList.remove('dragover');
-        }
-
-        dropZone.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            
-            if (files.length > 0) {
-                fileInput.files = files;
+        dropZone.addEventListener('drop', e => {
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
                 handleFileSelect();
             }
-        }
+        });
 
         function handleFileSelect() {
-            const fileNameDisplay = document.getElementById('fileNameDisplay');
-            const fileInfoDisplay = document.getElementById('fileInfoDisplay');
-            const uploadText = document.getElementById('uploadText');
-
-            if (fileInput.files.length > 0) {
-                const fileName = fileInput.files[0].name;
-                fileNameDisplay.innerText = fileName;
-                fileInfoDisplay.classList.remove('hidden');
-                uploadText.innerHTML = "Upload another file or <span class='text-indigo-400'>browse</span>";
+            const chip = document.getElementById('fileChip');
+            const name = document.getElementById('fileNameDisplay');
+            const text = document.getElementById('uploadText');
+            if (fileInput.files.length) {
+                name.textContent = fileInput.files[0].name;
+                chip.style.display = 'inline-flex';
+                text.innerHTML = "Replace file or <span>browse again</span>";
             }
         }
 
+        /* ── Analyze ────────────────────────────────────────── */
         async function analyzePitch() {
-            const btn = document.getElementById('analyzeBtn');
+            const btn     = document.getElementById('analyzeBtn');
             const results = document.getElementById('results');
             const loading = document.getElementById('loading');
 
-            if (!fileInput.files[0]) {
-                // Shake button animation or simple alert
-                alert("Please select an audio file first!");
-                return;
-            }
+            if (!fileInput.files[0]) { alert('Please select an audio file first!'); return; }
 
-            // Scroll to loading smooth behavior
-            loading.classList.remove('hidden');
-            loading.classList.add('flex');
-            results.classList.add('hidden');
+            loading.style.display = 'flex';
+            results.style.display = 'none';
             btn.disabled = true;
             btn.innerHTML = `
-                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <svg class="spin-svg" width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="animation:spin 1s linear infinite">
+                    <circle cx="12" cy="12" r="10" stroke-width="3" opacity="0.25"/>
+                    <path stroke-linecap="round" stroke-width="3" d="M12 2a10 10 0 0110 10" opacity="0.75"/>
                 </svg>
-                Processing...
-            `;
+                <span>Processing…</span>`;
 
             const formData = new FormData();
-            formData.append("file", fileInput.files[0]);
+            formData.append('file', fileInput.files[0]);
 
             try {
                 const url = API_BASE_URL.endsWith('/') ? `${API_BASE_URL}analyze-pitch` : `${API_BASE_URL}/analyze-pitch`;
-
-                const response = await fetch(url, {
-                    method: "POST",
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Server Error: ${response.status} - ${errorText}`);
-                }
-
+                const response = await fetch(url, { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`Server Error: ${response.status} - ${await response.text()}`);
                 const data = await response.json();
 
-                // Formatting text properly (preserving line breaks if mostly plain text)
                 document.getElementById('transcriptText').innerText = data.transcript;
-                document.getElementById('feedbackText').innerText = data.feedback;
+                document.getElementById('feedbackText').innerText   = data.feedback;
 
-                const audioPlayer = document.getElementById('audioFeedback');
                 const audioUrl = API_BASE_URL.endsWith('/') ? `${API_BASE_URL}${data.audio_path.substring(1)}` : `${API_BASE_URL}${data.audio_path}`;
-                audioPlayer.src = audioUrl;
+                document.getElementById('audioFeedback').src = audioUrl;
 
-                results.classList.remove('hidden');
-                
-                // Smooth scroll to results
-                setTimeout(() => {
-                    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 100);
-
-            } catch (error) {
-                alert("Error connecting to server. Make sure your Render backend is Live. Details: " + error.message);
-                console.error(error);
+                results.style.display = 'block';
+                setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+            } catch (err) {
+                alert('Error: ' + err.message);
+                console.error(err);
             } finally {
-                loading.classList.add('hidden');
-                loading.classList.remove('flex');
+                loading.style.display = 'none';
                 btn.disabled = false;
-                btn.innerHTML = `
-                    <span>Analyze Pitch</span>
-                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                `;
+                btn.innerHTML = `<span>Analyze My Pitch</span>
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`;
             }
         }
     </script>
 </body>
-
 </html>
