@@ -3,676 +3,516 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI Sales Pitch Coach – Instant psychological analysis and personalized audio coaching for your sales pitches.">
+    <meta name="description" content="AI Sales Pitch Coach – Instant psychological analysis and personalized coaching for your sales pitches.">
     <title>AI Sales Pitch Coach</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* ───────────────────────────────────────────
+           RESET & ROOT
+        ─────────────────────────────────────────── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --indigo:   #4F46E5;
-            --indigo-l: #6366F1;
-            --pink:     #EC4899;
-            --amber:    #F59E0B;
-            --green:    #10B981;
-            --text:     #1E1B4B;
-            --muted:    #6B7280;
-            --border:   rgba(79,70,229,0.15);
+            --brand: #5B4EF8;
+            --pink:  #E84393;
+            --green: #10B981;
+            --text:  #18172A;
+            --muted: #64748B;
+            --card-bg: rgba(255, 255, 255, 0.82);
+            --border: rgba(91, 78, 248, 0.15);
         }
 
         html, body {
-            min-height: 100%;
-            font-family: 'Outfit', sans-serif;
-            background: #ECF0FF;
+            height: 100%;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             color: var(--text);
             overflow-x: hidden;
         }
 
-        /* ═══════════════════════════════════════════
-           BACKGROUND SYSTEM
-        ═══════════════════════════════════════════ */
+        /* ───────────────────────────────────────────
+           ANIMATED BACKGROUND
+        ─────────────────────────────────────────── */
+        body {
+            /* Warm cream-to-lavender light gradient */
+            background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 35%, #fff0f9 65%, #fffbe6 100%);
+        }
+
+        /* Mesh orbs */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: drift 20s ease-in-out infinite;
+            mix-blend-mode: multiply;
+        }
+        .bg-orb:nth-child(1) { width:700px; height:700px; background:radial-gradient(ellipse, #c7d2fe 0%, transparent 65%); top:-220px; left:-200px; animation-delay:0s; }
+        .bg-orb:nth-child(2) { width:550px; height:550px; background:radial-gradient(ellipse, #fbcfe8 0%, transparent 65%); bottom:-160px; right:-150px; animation-delay:-7s; }
+        .bg-orb:nth-child(3) { width:420px; height:420px; background:radial-gradient(ellipse, #d1fae5 0%, transparent 65%); top:35%; left:40%; animation-delay:-13s; }
+        .bg-orb:nth-child(4) { width:380px; height:380px; background:radial-gradient(ellipse, #fde68a 0%, transparent 65%); top:10%; right:20%; animation-delay:-4s; }
+
+        @keyframes drift {
+            0%,100%{ transform: translate(0,0) scale(1); }
+            30%    { transform: translate(24px,-38px) scale(1.05); }
+            60%    { transform: translate(-18px,26px) scale(0.96); }
+            80%    { transform: translate(20px,12px) scale(1.02); }
+        }
+
+        /* Canvas for network + stars */
         #bgCanvas {
-            position: fixed; inset: 0;
-            width: 100%; height: 100%;
-            z-index: 0; pointer-events: none;
+            position: fixed; inset: 0; width: 100%; height: 100%;
+            z-index: 0; pointer-events: none; opacity: 0.6;
         }
 
-        /* Large soft gradient orbs */
-        .orb {
-            position: fixed; border-radius: 50%;
-            pointer-events: none; z-index: 0;
-            animation: floatOrb 18s ease-in-out infinite;
-        }
-        .orb-a {
-            width: 600px; height: 600px;
-            background: radial-gradient(circle at 40% 40%, #c7d2fe 0%, rgba(199,210,254,0) 70%);
-            top: -200px; left: -150px; animation-delay: 0s;
-        }
-        .orb-b {
-            width: 500px; height: 500px;
-            background: radial-gradient(circle at 60% 60%, #fbcfe8 0%, rgba(251,207,232,0) 70%);
-            bottom: -150px; right: -120px; animation-delay: -6s;
-        }
-        .orb-c {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle at 50% 50%, #d1fae5 0%, rgba(209,250,229,0) 70%);
-            top: 45%; left: 45%; animation-delay: -12s;
-        }
-        .orb-d {
-            width: 360px; height: 360px;
-            background: radial-gradient(circle at 50% 50%, #fde68a 0%, rgba(253,230,138,0) 70%);
-            top: 20%; right: 10%; animation-delay: -4s;
-        }
-        @keyframes floatOrb {
-            0%,100% { transform: translate(0,0) scale(1); }
-            25%     { transform: translate(20px,-35px) scale(1.06); }
-            50%     { transform: translate(-15px, 20px) scale(0.96); }
-            75%     { transform: translate(25px, 10px) scale(1.03); }
-        }
-
-        /* ═══════════════════════════════════════════
-           PAGE SHELL — two-column
-        ═══════════════════════════════════════════ */
-        .page {
+        /* ───────────────────────────────────────────
+           TWO-COLUMN LAYOUT
+        ─────────────────────────────────────────── */
+        .layout {
             position: relative; z-index: 10;
-            min-height: 100vh;
             display: grid;
-            grid-template-columns: 420px 1fr;
+            grid-template-columns: 42% 58%;
+            min-height: 100vh;
         }
 
-        /* ─── LEFT HERO ─────────────────────────── */
+        /* ── LEFT: Hero ─────────────────────────── */
         .hero {
-            position: sticky; top: 0;
-            height: 100vh;
-            display: flex; flex-direction: column;
-            justify-content: center;
-            padding: 56px 48px;
-            background: rgba(255,255,255,0.45);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-right: 1.5px solid rgba(79,70,229,0.12);
+            position: sticky; top: 0; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 64px 56px;
+            background: rgba(255,255,255,0.35);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(91,78,248,0.12);
         }
 
-        .badge {
+        .live-pill {
             display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(79,70,229,0.1);
-            border: 1px solid rgba(79,70,229,0.22);
-            color: var(--indigo-l);
-            font-size: 0.78rem; font-weight: 600;
-            padding: 6px 16px; border-radius: 999px;
-            margin-bottom: 28px; width: fit-content;
-            animation: fadeUp 0.7s ease 0.1s both;
+            background: rgba(91,78,248,0.08);
+            border: 1px solid rgba(91,78,248,0.18);
+            color: var(--brand);
+            font-size: 0.8rem; font-weight: 600;
+            padding: 7px 18px; border-radius: 99px;
+            margin-bottom: 32px; width: max-content;
         }
-        .badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; }
+        .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+        @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(1.4)} }
 
         .hero-icon {
-            width: 90px; height: 90px;
-            background: linear-gradient(135deg, var(--indigo), #a78bfa);
-            border-radius: 28px;
+            width: 96px; height: 96px; border-radius: 26px;
+            background: linear-gradient(135deg, var(--brand), #a78bfa);
             display: flex; align-items: center; justify-content: center;
-            font-size: 44px;
-            margin-bottom: 30px;
-            box-shadow: 0 18px 40px rgba(79,70,229,0.35), 0 0 0 10px rgba(79,70,229,0.07);
-            animation: iconPop 0.9s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;
-            transition: transform 0.35s ease;
+            font-size: 48px; margin-bottom: 32px;
+            box-shadow: 0 20px 50px rgba(91,78,248,0.35), 0 0 0 12px rgba(91,78,248,0.06);
+            animation: popIn 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+            transition: transform 0.3s ease;
+            cursor: default;
         }
-        .hero-icon:hover { transform: rotate(10deg) scale(1.08); }
+        .hero-icon:hover { transform: rotate(10deg) scale(1.07); }
+        @keyframes popIn { from{opacity:0;transform:scale(0.4) rotate(-20deg)} to{opacity:1;transform:scale(1) rotate(0)} }
 
-        h1 {
-            font-size: clamp(2.4rem, 3vw, 3.8rem);
-            font-weight: 900; line-height: 1.1;
-            letter-spacing: -1px;
-            margin-bottom: 18px;
-            animation: fadeUp 0.7s ease 0.25s both;
+        .hero h1 {
+            font-size: clamp(2.6rem, 3.2vw, 4.2rem);
+            font-weight: 800; line-height: 1.1; letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            animation: up 0.7s ease 0.2s both;
         }
-        h1 .grad {
-            background: linear-gradient(120deg, var(--indigo), var(--pink));
+        .hero h1 em {
+            font-style: normal;
+            background: linear-gradient(120deg, var(--brand), var(--pink));
             -webkit-background-clip: text; background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .hero-desc {
-            font-size: 1.05rem; line-height: 1.75; color: var(--muted);
-            max-width: 340px; margin-bottom: 36px;
-            animation: fadeUp 0.7s ease 0.35s both;
+        .hero p {
+            font-size: 1.1rem; line-height: 1.75; color: var(--muted);
+            max-width: 360px; margin-bottom: 42px;
+            animation: up 0.7s ease 0.3s both;
         }
 
-        .features { display: flex; flex-direction: column; gap: 14px; animation: fadeUp 0.7s ease 0.45s both; }
-        .feat-item { display: flex; align-items: center; gap: 14px; font-size: 0.92rem; font-weight: 500; color: #374151; }
-        .feat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
-
-        /* ─── RIGHT CONTENT ─────────────────────── */
-        .content-col {
-            display: flex; flex-direction: column;
-            padding: 56px 52px;
-            gap: 40px;
-            background: rgba(255,255,255,0.5);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            animation: slideIn 0.7s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+        .feature-list { display: flex; flex-direction: column; gap: 16px; animation: up 0.7s ease 0.4s both; }
+        .feature {
+            display: flex; align-items: center; gap: 14px;
+            font-size: 0.95rem; font-weight: 500; color: #374151;
         }
-
-        /* Upload Section */
-        .upload-section {}
-        .section-heading { font-size: 1.6rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
-        .section-sub { font-size: 0.95rem; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
-
-        .upload-zone {
-            border: 2.5px dashed rgba(79,70,229,0.28);
-            border-radius: 20px;
-            padding: 48px 32px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-            background: rgba(238,240,255,0.45);
-            margin-bottom: 22px;
-            position: relative;
-        }
-        .upload-zone::after {
-            content:''; position: absolute; inset: 0; border-radius: 18px;
-            background: linear-gradient(135deg, rgba(79,70,229,0.07), rgba(236,72,153,0.05));
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .upload-zone:hover::after, .upload-zone.dragover::after { opacity: 1; }
-        .upload-zone:hover, .upload-zone.dragover {
-            border-color: var(--indigo);
-            transform: translateY(-3px);
-            box-shadow: 0 16px 44px rgba(79,70,229,0.14);
-        }
-        .upload-icon-ring {
-            width: 76px; height: 76px; border-radius: 50%;
-            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+        .feature-icon {
+            width: 40px; height: 40px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
+            font-size: 19px; flex-shrink: 0;
+        }
+
+        /* ── RIGHT: Form + Results ──────────────── */
+        .main {
+            display: flex; flex-direction: column;
+            padding: 64px 56px; gap: 40px;
+            background: rgba(255,255,255,0.42);
+            backdrop-filter: blur(20px);
+            animation: slideRight 0.7s ease both;
+        }
+        @keyframes slideRight { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
+
+        .main-title { font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+        .main-sub   { font-size: 0.97rem; color: var(--muted); margin-bottom: 30px; }
+
+        /* Upload */
+        .drop-zone {
+            border: 2.5px dashed rgba(91,78,248,0.28);
+            border-radius: 22px;
+            padding: 50px 32px; text-align: center; cursor: pointer;
+            background: rgba(91,78,248,0.03);
+            transition: all 0.3s ease;
+            position: relative; margin-bottom: 22px;
+        }
+        .drop-zone:hover, .drop-zone.over {
+            border-color: var(--brand);
+            background: rgba(91,78,248,0.06);
+            transform: translateY(-3px);
+            box-shadow: 0 14px 40px rgba(91,78,248,0.13);
+        }
+        label[for="fileIn"] { position:absolute; inset:0; cursor:pointer; border-radius:20px; z-index:2; }
+        .drop-inner { position:relative; z-index:1; pointer-events:none; }
+        .drop-ring {
+            width:78px; height:78px; border-radius:50%;
+            background: linear-gradient(135deg,#e0e7ff,#c7d2fe);
+            display:flex; align-items:center; justify-content:center;
             margin: 0 auto 16px;
             transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
         }
-        .upload-zone:hover .upload-icon-ring { transform: scale(1.15) translateY(-6px); }
-        .upload-icon-ring svg { width: 34px; height: 34px; color: var(--indigo); }
-        .upload-title { font-size: 1.08rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
-        .upload-title span { color: var(--indigo-l); text-decoration: underline; text-underline-offset: 3px; }
-        .upload-hint { font-size: 0.85rem; color: var(--muted); }
+        .drop-zone:hover .drop-ring { transform: scale(1.14) translateY(-6px); }
+        .drop-ring svg { width:36px; height:36px; color:var(--brand); }
+        .drop-label { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+        .drop-label span { color: var(--brand); text-decoration: underline; text-underline-offset: 3px; }
+        .drop-hint { font-size: 0.85rem; color: var(--muted); }
         .file-chip {
             display: none; align-items: center; gap: 8px;
-            background: linear-gradient(120deg, #d1fae5, #a7f3d0);
-            color: #065f46; border-radius: 999px;
-            padding: 7px 18px; font-weight: 600; font-size: 0.85rem;
-            margin: 16px auto 0; width: fit-content; border: 1px solid #6ee7b7;
-            animation: chipPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+            background: linear-gradient(120deg,#d1fae5,#a7f3d0); color: #065f46;
+            border-radius:99px; padding:7px 20px; font-weight:600; font-size:0.85rem;
+            margin: 16px auto 0; width:max-content; border:1px solid rgba(16,185,129,0.35);
+            animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
         }
-        @keyframes chipPop { from{opacity:0;transform:scale(0.6)} to{opacity:1;transform:scale(1)} }
+        @keyframes pop { from{opacity:0;transform:scale(0.55)} to{opacity:1;transform:scale(1)} }
 
-        /* Analyze Button */
-        .btn {
-            width: 100%; padding: 20px 28px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1.15rem; font-weight: 700; color: #fff;
-            border: none; border-radius: 16px; cursor: pointer;
-            background: linear-gradient(120deg, var(--indigo) 0%, var(--pink) 60%, var(--indigo) 120%);
+        /* Button */
+        .btn-main {
+            width:100%; padding:22px; border:none; border-radius:16px; cursor:pointer;
+            font-family: inherit; font-size:1.15rem; font-weight:700; color:#fff;
+            background: linear-gradient(125deg, var(--brand) 0%, var(--pink) 60%, var(--brand) 120%);
             background-size: 200% 100%;
-            transition: all 0.4s ease;
-            box-shadow: 0 8px 30px rgba(79,70,229,0.32);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            position: relative; overflow: hidden;
+            box-shadow: 0 8px 28px rgba(91,78,248,0.32);
+            display:flex; align-items:center; justify-content:center; gap:10px;
+            transition: all 0.4s ease; position:relative; overflow:hidden;
         }
-        .btn::after {
-            content:''; position:absolute; inset:0;
-            background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.18) 60%, transparent 80%);
-            transform: translateX(-100%); transition: transform 0.6s;
-        }
-        .btn:hover::after { transform: translateX(100%); }
-        .btn:hover:not(:disabled) {
-            background-position: right center;
-            box-shadow: 0 14px 36px rgba(236,72,153,0.42);
-            transform: translateY(-2px);
-        }
-        .btn:active:not(:disabled) { transform: translateY(0); }
-        .btn:disabled { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; box-shadow: none; transform: none; }
+        .btn-main::after { content:''; position:absolute; inset:0; background:linear-gradient(120deg,transparent 40%,rgba(255,255,255,0.16) 58%,transparent 78%); transform:translateX(-110%); transition:transform 0.55s; }
+        .btn-main:hover::after { transform:translateX(110%); }
+        .btn-main:hover:not(:disabled) { background-position:right; box-shadow:0 14px 38px rgba(232,67,147,0.42); transform:translateY(-2px); }
+        .btn-main:disabled { background:#e5e7eb; color:#9ca3af; cursor:not-allowed; box-shadow:none; transform:none; }
+        @keyframes spin { to { transform:rotate(360deg); } }
 
         /* Loader */
-        .loader-wrap { display: none; flex-direction: column; align-items: center; padding: 48px 0; }
-        .loader-rings { position: relative; width: 80px; height: 80px; margin-bottom: 22px; }
-        .loader-rings div { position:absolute; inset:0; border-radius:50%; border:3px solid transparent; animation:spin 1.2s linear infinite; }
-        .loader-rings div:nth-child(1) { border-top-color: var(--indigo); }
-        .loader-rings div:nth-child(2) { border-bottom-color: var(--pink); inset:11px; animation-duration:1.9s; animation-direction:reverse; }
-        .loader-rings div:nth-child(3) { border-left-color: var(--amber); inset:22px; animation-duration:2.5s; }
-        .loader-center { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:24px; animation:pulse 2s ease-in-out infinite; }
-        .loader-title { font-size:1.1rem; font-weight:700; color:var(--text); margin-bottom:8px; }
-        .loader-sub   { font-size:0.9rem; color:var(--muted); text-align:center; line-height:1.65; max-width:320px; }
+        .loader {
+            display:none; flex-direction:column; align-items:center; padding:48px 0 8px;
+            animation: fadeIn 0.5s ease;
+        }
+        .rings { position:relative; width:80px; height:80px; margin-bottom:22px; }
+        .rings div { position:absolute; inset:0; border-radius:50%; border:3px solid transparent; animation:spin 1.2s linear infinite; }
+        .rings div:nth-child(1) { border-top-color: var(--brand); }
+        .rings div:nth-child(2) { border-bottom-color: var(--pink); inset:11px; animation-duration:1.9s; animation-direction:reverse; }
+        .rings div:nth-child(3) { border-left-color: #F59E0B; inset:22px; animation-duration:2.5s; }
+        .rings-icon { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:24px; animation:blink 2s ease-in-out infinite; }
+        .loader-t { font-size:1.1rem; font-weight:700; margin-bottom:7px; }
+        .loader-s { font-size:0.9rem; color:var(--muted); text-align:center; line-height:1.65; max-width:300px; }
 
-        /* ═══════════════════════════════════════════
-           RESULTS SECTION
-        ═══════════════════════════════════════════ */
-        .results-section { display: none; flex-direction: column; gap: 20px; animation: fadeUp 0.5s ease; }
+        /* ── Results ──────────────────────────── */
+        .results-section { display:none; flex-direction:column; gap:20px; animation: up 0.5s ease; }
 
         .results-header {
-            display: flex; align-items: center; gap: 12px;
-            padding-bottom: 18px;
-            border-bottom: 1.5px solid var(--border);
+            display: flex; align-items:center; gap:12px;
+            padding-bottom: 18px; border-bottom: 1px solid var(--border);
         }
-        .results-header-badge {
-            background: linear-gradient(120deg, var(--indigo), var(--pink));
-            color: #fff; font-size: 0.78rem; font-weight: 700;
-            padding: 5px 14px; border-radius: 999px;
-            letter-spacing: 0.05em;
+        .done-badge {
+            background: linear-gradient(120deg, var(--brand), var(--pink));
+            color:#fff; font-size:0.75rem; font-weight:700;
+            padding:5px 14px; border-radius:99px; letter-spacing:0.06em; white-space:nowrap;
         }
-        .results-header h3 { font-size: 1.3rem; font-weight: 800; color: var(--text); }
+        .results-header h3 { font-size:1.4rem; font-weight:800; }
 
-        /* Side-by-side transcript + feedback grid */
+        /* Side-by-side transcript + feedback */
         .cards-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 18px;
         }
+
         .rcard {
-            background: rgba(255,255,255,0.88);
+            background: var(--card-bg);
             border: 1.5px solid var(--border);
-            border-radius: 20px; padding: 28px 26px;
-            box-shadow: 0 4px 22px rgba(79,70,229,0.08);
+            border-radius: 20px; padding: 26px 24px;
+            box-shadow: 0 4px 20px rgba(91,78,248,0.07);
+            display:flex; flex-direction:column;
             transition: transform 0.25s, box-shadow 0.25s;
-            display: flex; flex-direction: column;
         }
-        .rcard:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(79,70,229,0.14); }
-        .rcard-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
-        .rcard-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .rcard-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
-        .rcard-text { font-size: 0.93rem; line-height: 1.8; color: #374151; flex: 1; max-height: 280px; overflow-y: auto; padding-right: 4px; }
-        .rcard-text::-webkit-scrollbar { width: 4px; }
-        .rcard-text::-webkit-scrollbar-track { background: transparent; }
-        .rcard-text::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 99px; }
+        .rcard:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(91,78,248,0.13); }
+        .rcard-head { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+        .rcard-ic { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+        .rcard-lbl { font-size:0.72rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; }
+        .rcard-body { font-size:0.93rem; line-height:1.8; color:#374151; flex:1; max-height:260px; overflow-y:auto; }
+        .rcard-body::-webkit-scrollbar { width:4px; }
+        .rcard-body::-webkit-scrollbar-thumb { background:#c7d2fe; border-radius:99px; }
 
-        /* Audio bar — full width below both cards */
-        .audio-bar {
-            background: rgba(255,255,255,0.88);
+        /* Audio — full-width below both cards */
+        .audio-row {
+            background: var(--card-bg);
             border: 1.5px solid var(--border);
-            border-radius: 20px;
-            padding: 24px 28px;
-            box-shadow: 0 4px 22px rgba(79,70,229,0.07);
-            display: flex; align-items: center; gap: 20px;
+            border-radius: 20px; padding: 22px 26px;
+            box-shadow: 0 4px 20px rgba(91,78,248,0.07);
+            display:flex; align-items:center; gap:18px;
         }
-        .audio-bar-icon {
-            width: 48px; height: 48px; border-radius: 14px;
-            background: linear-gradient(135deg, #d1fae5, #6ee7b7);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; font-size: 22px;
-        }
-        .audio-bar-info { flex: 1; }
-        .audio-bar-label {
-            font-size: 0.75rem; font-weight: 700; color: var(--muted);
-            text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 7px;
-        }
-        .adot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: pulse 2s ease-in-out infinite; flex-shrink: 0; }
-        .audio-wrap { background: #f5f7ff; border-radius: 12px; padding: 10px 14px; border: 1px solid rgba(79,70,229,0.1); }
-        audio { width: 100%; height: 38px; }
+        .audio-ic { width:50px; height:50px; border-radius:14px; background:linear-gradient(135deg,#d1fae5,#6ee7b7); display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0; }
+        .audio-content { flex:1; }
+        .audio-lbl { font-size:0.75rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; display:flex;align-items:center;gap:7px; }
+        .adot { width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 2s ease-in-out infinite; }
+        .audio-player { background:#f5f7ff; border-radius:12px; padding:10px 14px; border:1px solid rgba(91,78,248,0.1); }
+        audio { width:100%; height:38px; }
 
-        /* ═══════════════════════════════════════════
-           SHARED KEYFRAMES
-        ═══════════════════════════════════════════ */
-        @keyframes fadeUp  { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes slideIn { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
-        @keyframes iconPop { from{opacity:0;transform:scale(0.5) rotate(-20deg)} to{opacity:1;transform:scale(1) rotate(0)} }
-        @keyframes pulse   { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.45;transform:scale(1.3)} }
-        @keyframes spin    { to{transform:rotate(360deg)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes up     { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
 
-        /* ─── Responsive ────────────────────────── */
-        @media (max-width: 1024px) {
-            .page { grid-template-columns: 1fr; }
-            .hero { position: relative; height: auto; border-right: none; border-bottom: 1.5px solid rgba(79,70,229,0.12); }
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            .hero { position:relative; height:auto; border-right:none; border-bottom:1px solid rgba(91,78,248,0.12); }
             .cards-row { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 640px) {
-            .content-col { padding: 36px 24px; }
-            .hero { padding: 40px 28px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Animated background -->
-    <div class="orb orb-a"></div>
-    <div class="orb orb-b"></div>
-    <div class="orb orb-c"></div>
-    <div class="orb orb-d"></div>
+    <!-- Background layer -->
+    <div class="bg-orb"></div>
+    <div class="bg-orb"></div>
+    <div class="bg-orb"></div>
+    <div class="bg-orb"></div>
     <canvas id="bgCanvas"></canvas>
 
-    <div class="page">
+    <div class="layout">
 
-        <!-- ══ LEFT HERO ════════════════════════════ -->
-        <section class="hero">
-            <div class="badge"><div class="badge-dot"></div>AI-Powered Coach</div>
-
+        <!-- ════ LEFT HERO ════ -->
+        <aside class="hero">
+            <div class="live-pill"><div class="live-dot"></div> AI-Powered · Live</div>
             <div class="hero-icon">🎙️</div>
-
-            <h1>AI Sales Pitch<br><span class="grad">Coach</span></h1>
-
-            <p class="hero-desc">Upload your pitch recording. Get instant psychological analysis, transcript, and personalized audio coaching to close more deals.</p>
-
-            <div class="features">
-                <div class="feat-item">
-                    <div class="feat-icon" style="background:#ede9fe;">🧠</div>
-                    <span>Psychological pattern analysis</span>
-                </div>
-                <div class="feat-item">
-                    <div class="feat-icon" style="background:#d1fae5;">📝</div>
-                    <span>Accurate speech transcription</span>
-                </div>
-                <div class="feat-item">
-                    <div class="feat-icon" style="background:#fef3c7;">🔊</div>
-                    <span>Personalized audio coaching</span>
-                </div>
-                <div class="feat-item">
-                    <div class="feat-icon" style="background:#fce7f3;">🎯</div>
-                    <span>Actionable closing strategies</span>
-                </div>
+            <h1>AI Sales Pitch<br><em>Coach</em></h1>
+            <p>Upload your pitch audio and get instant psychological analysis, full transcript, and personalized coaching — all in seconds.</p>
+            <div class="feature-list">
+                <div class="feature"><div class="feature-icon" style="background:#ede9fe;">🧠</div>Psychological pattern analysis</div>
+                <div class="feature"><div class="feature-icon" style="background:#d1fae5;">📝</div>Accurate speech transcription</div>
+                <div class="feature"><div class="feature-icon" style="background:#fef3c7;">🔊</div>Personalized audio coaching</div>
+                <div class="feature"><div class="feature-icon" style="background:#fce7f3;">🎯</div>Actionable closing strategies</div>
             </div>
-        </section>
+        </aside>
 
-        <!-- ══ RIGHT CONTENT ═════════════════════════ -->
-        <div class="content-col">
-
-            <!-- Upload form -->
-            <div class="upload-section">
-                <h2 class="section-heading">Analyze your pitch</h2>
-                <p class="section-sub">Drop your audio recording below and let the AI coach work its magic.</p>
+        <!-- ════ RIGHT MAIN ════ -->
+        <main class="main">
+            <div>
+                <h2 class="main-title">Analyze your pitch</h2>
+                <p class="main-sub">Drop your recording below and let the AI do the rest.</p>
 
                 <script>
                     const API_BASE_URL = "https://ai-sales-pitch-analyzer.onrender.com";
                 </script>
 
-                <div id="dropZone" class="upload-zone">
-                    <input type="file" id="audioInput" accept="audio/*" style="display:none" onchange="handleFileSelect()">
-                    <label for="audioInput" style="position:absolute;inset:0;cursor:pointer;z-index:2;border-radius:18px;"></label>
-                    <div style="position:relative;z-index:1;pointer-events:none;">
-                        <div class="upload-icon-ring">
+                <!-- Drop zone -->
+                <div id="dropZone" class="drop-zone">
+                    <input type="file" id="fileIn" accept="audio/*" style="display:none" onchange="onFile()">
+                    <label for="fileIn"></label>
+                    <div class="drop-inner">
+                        <div class="drop-ring">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6H16a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                             </svg>
                         </div>
-                        <p class="upload-title" id="uploadText">Drag &amp; drop audio, or <span>browse</span></p>
-                        <p class="upload-hint">MP3 · M4A · WAV &nbsp;—&nbsp; Max 10 MB</p>
-                        <div id="fileChip" class="file-chip">
+                        <p class="drop-label" id="dropLabel">Drag &amp; drop audio, or <span>browse</span></p>
+                        <p class="drop-hint">MP3 · M4A · WAV &nbsp;—&nbsp; Max 10 MB</p>
+                        <div class="file-chip" id="fileChip">
                             <svg width="13" height="13" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                            <span id="fileNameDisplay"></span>
+                            <span id="fileName"></span>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="analyzePitch()" id="analyzeBtn" class="btn">
+                <button class="btn-main" id="analyzeBtn" onclick="run()">
                     <span>Analyze My Pitch</span>
                     <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 </button>
             </div>
 
             <!-- Loader -->
-            <div class="loader-wrap" id="loading">
-                <div class="loader-rings">
+            <div class="loader" id="loader">
+                <div class="rings">
                     <div></div><div></div><div></div>
-                    <div class="loader-center">🎤</div>
+                    <div class="rings-icon">🎤</div>
                 </div>
-                <p class="loader-title">Analyzing your delivery…</p>
-                <p class="loader-sub">The AI coach is studying tone, pacing, and persuasion triggers. Hold tight.</p>
+                <p class="loader-t">Analyzing your delivery…</p>
+                <p class="loader-s">The AI coach is studying tone, pacing, and persuasion triggers. Hold tight.</p>
             </div>
 
-            <!-- ══ RESULTS — cards side-by-side ═════ -->
+            <!-- Results -->
             <div class="results-section" id="results">
-
                 <div class="results-header">
-                    <span class="results-header-badge">✨ Analysis Complete</span>
-                    <h3>Here's your coaching report</h3>
+                    <span class="done-badge">✨ Analysis Complete</span>
+                    <h3>Your coaching report</h3>
                 </div>
 
-                <!-- Transcript | Feedback — parallel columns -->
+                <!-- Transcript & Feedback side by side -->
                 <div class="cards-row">
-                    <!-- Transcript -->
                     <div class="rcard">
-                        <div class="rcard-header">
-                            <div class="rcard-icon" style="background:#ede9fe;">
+                        <div class="rcard-head">
+                            <div class="rcard-ic" style="background:#ede9fe;">
                                 <svg width="16" height="16" fill="none" stroke="#7c3aed" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             </div>
-                            <span class="rcard-label" style="color:#7c3aed;">Transcript</span>
+                            <span class="rcard-lbl" style="color:#7c3aed;">Transcript</span>
                         </div>
-                        <p id="transcriptText" class="rcard-text"></p>
+                        <p class="rcard-body" id="transcriptText"></p>
                     </div>
-
-                    <!-- AI Feedback -->
                     <div class="rcard">
-                        <div class="rcard-header">
-                            <div class="rcard-icon" style="background:#d1fae5;">
+                        <div class="rcard-head">
+                            <div class="rcard-ic" style="background:#d1fae5;">
                                 <svg width="16" height="16" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
                             </div>
-                            <span class="rcard-label" style="color:#059669;">AI Coaching Feedback</span>
+                            <span class="rcard-lbl" style="color:#059669;">AI Coaching Feedback</span>
                         </div>
-                        <p id="feedbackText" class="rcard-text"></p>
+                        <p class="rcard-body" id="feedbackText"></p>
                     </div>
                 </div>
 
-                <!-- Audio — full width below both cards -->
-                <div class="audio-bar">
-                    <div class="audio-bar-icon">🎧</div>
-                    <div class="audio-bar-info">
-                        <div class="audio-bar-label"><div class="adot"></div>Coach Audio Feedback</div>
-                        <div class="audio-wrap">
-                            <audio id="audioFeedback" controls></audio>
-                        </div>
+                <!-- Audio full-width below both -->
+                <div class="audio-row">
+                    <div class="audio-ic">🎧</div>
+                    <div class="audio-content">
+                        <div class="audio-lbl"><div class="adot"></div>Coach Audio Feedback</div>
+                        <div class="audio-player"><audio id="audioEl" controls></audio></div>
                     </div>
                 </div>
-
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        /* ════════════════════════════════════════════
-           RICH BACKGROUND CANVAS
-           Layered system:
-           1) Floating connection network with glowing nodes
-           2) Pulsing wave rings from random points
-           3) Shooting star trails
-        ════════════════════════════════════════════ */
+        /* ── Background: network + wave rings + shooting stars ──────── */
         (function () {
-            const canvas = document.getElementById('bgCanvas');
-            const ctx = canvas.getContext('2d');
+            const cv = document.getElementById('bgCanvas'), cx = cv.getContext('2d');
             let W, H;
+            const resize = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+            resize(); window.addEventListener('resize', resize);
 
-            function resize() {
-                W = canvas.width  = window.innerWidth;
-                H = canvas.height = window.innerHeight;
-            }
-            resize();
-            window.addEventListener('resize', resize);
+            const palette = ['#818cf8','#a5b4fc','#c4b5fd','#f9a8d4','#6ee7b7','#fcd34d'];
 
-            /* ── 1. Network nodes ──────────── */
-            const COLORS = ['#818cf8', '#a5b4fc', '#f9a8d4', '#6ee7b7', '#fcd34d', '#c4b5fd'];
-            const nodes = Array.from({ length: 55 }, () => ({
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
-                vx: (Math.random() - 0.5) * 0.45,
-                vy: (Math.random() - 0.5) * 0.45,
-                r: Math.random() * 3.5 + 1.5,
-                col: COLORS[Math.floor(Math.random() * COLORS.length)],
+            // Nodes
+            const nodes = Array.from({length: 52}, () => ({
+                x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+                vx: (Math.random() - .5) * .4, vy: (Math.random() - .5) * .4,
+                r: Math.random() * 3 + 1.5, col: palette[Math.floor(Math.random() * palette.length)]
             }));
-            const LINK_DIST = 160;
 
-            /* ── 2. Wave rings ─────────────── */
+            // Pulse waves
             const waves = [];
-            function spawnWave() {
-                waves.push({
-                    x: Math.random() * window.innerWidth,
-                    y: Math.random() * window.innerHeight,
-                    r: 0,
-                    maxR: 110 + Math.random() * 90,
-                    alpha: 0.35,
-                    col: COLORS[Math.floor(Math.random() * COLORS.length)],
-                });
-            }
-            setInterval(spawnWave, 2200);
+            setInterval(() => waves.push({ x: Math.random() * innerWidth, y: Math.random() * innerHeight, r: 0, max: 120 + Math.random() * 100, col: palette[Math.floor(Math.random() * palette.length)] }), 2000);
 
-            /* ── 3. Shooting stars ─────────── */
+            // Stars
             const stars = [];
-            function spawnStar() {
-                const angle = (Math.random() * 40 - 20 + 200) * Math.PI / 180; // mostly bottom-right
-                const speed = 4 + Math.random() * 5;
-                stars.push({
-                    x: Math.random() * window.innerWidth,
-                    y: Math.random() * window.innerHeight * 0.5,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    len: 70 + Math.random() * 80,
-                    alpha: 0.6,
-                    col: COLORS[Math.floor(Math.random() * COLORS.length)],
-                });
-            }
-            setInterval(spawnStar, 1800);
+            setInterval(() => {
+                const a = (195 + Math.random() * 30) * Math.PI / 180, sp = 4.5 + Math.random() * 5;
+                stars.push({ x: Math.random() * W, y: Math.random() * H * .6, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, col: palette[Math.floor(Math.random() * palette.length)], len: 80 + Math.random() * 70 });
+            }, 1600);
 
-            /* ── Render loop ───────────────── */
-            function draw() {
-                ctx.clearRect(0, 0, W, H);
+            (function draw() {
+                cx.clearRect(0, 0, W, H);
 
-                /* — Network lines — */
-                for (let i = 0; i < nodes.length; i++) {
+                // Lines between nearby nodes
+                for (let i = 0; i < nodes.length; i++)
                     for (let j = i + 1; j < nodes.length; j++) {
-                        const dx = nodes[i].x - nodes[j].x;
-                        const dy = nodes[i].y - nodes[j].y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
-                        if (dist < LINK_DIST) {
-                            ctx.beginPath();
-                            ctx.moveTo(nodes[i].x, nodes[i].y);
-                            ctx.lineTo(nodes[j].x, nodes[j].y);
-                            ctx.strokeStyle = nodes[i].col;
-                            ctx.globalAlpha = (1 - dist / LINK_DIST) * 0.18;
-                            ctx.lineWidth = 1;
-                            ctx.stroke();
+                        const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y;
+                        const d = Math.hypot(dx, dy);
+                        if (d < 155) {
+                            cx.beginPath(); cx.moveTo(nodes[i].x, nodes[i].y); cx.lineTo(nodes[j].x, nodes[j].y);
+                            cx.strokeStyle = nodes[i].col; cx.globalAlpha = (1 - d / 155) * 0.2;
+                            cx.lineWidth = 1; cx.stroke();
                         }
                     }
-                }
 
-                /* — Nodes — */
+                // Nodes
                 nodes.forEach(n => {
-                    ctx.beginPath();
-                    ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
-                    ctx.fillStyle = n.col;
-                    ctx.globalAlpha = 0.55;
-                    ctx.fill();
-
-                    /* tiny glow */
-                    const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * 4);
-                    g.addColorStop(0, n.col + '50');
-                    g.addColorStop(1, 'transparent');
-                    ctx.beginPath();
-                    ctx.arc(n.x, n.y, n.r * 4, 0, Math.PI * 2);
-                    ctx.fillStyle = g;
-                    ctx.globalAlpha = 0.18;
-                    ctx.fill();
-
+                    cx.beginPath(); cx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+                    cx.fillStyle = n.col; cx.globalAlpha = 0.65; cx.fill();
                     n.x += n.vx; n.y += n.vy;
-                    if (n.x < -10) n.x = W + 10;
-                    if (n.x > W + 10) n.x = -10;
-                    if (n.y < -10) n.y = H + 10;
-                    if (n.y > H + 10) n.y = -10;
+                    if (n.x < -5) n.x = W + 5; if (n.x > W + 5) n.x = -5;
+                    if (n.y < -5) n.y = H + 5; if (n.y > H + 5) n.y = -5;
                 });
 
-                /* — Wave rings — */
+                // Waves
                 for (let i = waves.length - 1; i >= 0; i--) {
                     const w = waves[i];
-                    ctx.beginPath();
-                    ctx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
-                    ctx.strokeStyle = w.col;
-                    ctx.lineWidth = 2;
-                    ctx.globalAlpha = w.alpha * (1 - w.r / w.maxR);
-                    ctx.stroke();
-                    w.r += 1.2;
-                    if (w.r >= w.maxR) { waves.splice(i, 1); }
+                    cx.beginPath(); cx.arc(w.x, w.y, w.r, 0, Math.PI * 2);
+                    cx.strokeStyle = w.col; cx.lineWidth = 2;
+                    cx.globalAlpha = 0.4 * (1 - w.r / w.max); cx.stroke();
+                    w.r += 1.4;
+                    if (w.r > w.max) waves.splice(i, 1);
                 }
 
-                /* — Shooting stars — */
+                // Stars
                 for (let i = stars.length - 1; i >= 0; i--) {
                     const s = stars[i];
-                    const grad = ctx.createLinearGradient(s.x, s.y, s.x - s.vx * s.len / 5, s.y - s.vy * s.len / 5);
-                    grad.addColorStop(0, s.col);
-                    grad.addColorStop(1, 'transparent');
-                    ctx.beginPath();
-                    ctx.moveTo(s.x, s.y);
-                    ctx.lineTo(s.x - s.vx * (s.len / 5), s.y - s.vy * (s.len / 5));
-                    ctx.strokeStyle = grad;
-                    ctx.lineWidth = 1.5;
-                    ctx.globalAlpha = s.alpha;
-                    ctx.stroke();
-                    s.x += s.vx; s.y += s.vy;
-                    s.alpha -= 0.012;
-                    if (s.alpha <= 0 || s.x > W + 50 || s.y > H + 50) { stars.splice(i, 1); }
+                    const g = cx.createLinearGradient(s.x, s.y, s.x - s.vx * s.len / 5, s.y - s.vy * s.len / 5);
+                    g.addColorStop(0, s.col); g.addColorStop(1, 'transparent');
+                    cx.beginPath(); cx.moveTo(s.x, s.y); cx.lineTo(s.x - s.vx * s.len / 5, s.y - s.vy * s.len / 5);
+                    cx.strokeStyle = g; cx.lineWidth = 1.6; cx.globalAlpha = s.life; cx.stroke();
+                    s.x += s.vx; s.y += s.vy; s.life -= 0.014;
+                    if (s.life <= 0) stars.splice(i, 1);
                 }
 
-                ctx.globalAlpha = 1;
+                cx.globalAlpha = 1;
                 requestAnimationFrame(draw);
-            }
-            draw();
+            })();
         })();
 
-        /* ════════ Drag & Drop ═══════════════════════ */
-        const dropZone  = document.getElementById('dropZone');
-        const fileInput = document.getElementById('audioInput');
+        /* ── Drag & drop ────────────────────────────────────── */
+        const dz = document.getElementById('dropZone');
+        const fi = document.getElementById('fileIn');
+        ['dragenter','dragover','dragleave','drop'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }));
+        ['dragenter','dragover'].forEach(e => dz.addEventListener(e, () => dz.classList.add('over')));
+        ['dragleave','drop'].forEach(e     => dz.addEventListener(e, () => dz.classList.remove('over')));
+        dz.addEventListener('drop', e => { if (e.dataTransfer.files[0]) { fi.files = e.dataTransfer.files; onFile(); } });
 
-        ['dragenter','dragover','dragleave','drop'].forEach(ev => {
-            dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
-        });
-        ['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.add('dragover')));
-        ['dragleave','drop'].forEach(ev      => dropZone.addEventListener(ev, () => dropZone.classList.remove('dragover')));
-        dropZone.addEventListener('drop', e => {
-            if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFileSelect(); }
-        });
-
-        function handleFileSelect() {
-            if (!fileInput.files.length) return;
-            const chip = document.getElementById('fileChip');
-            document.getElementById('fileNameDisplay').textContent = fileInput.files[0].name;
-            chip.style.display = 'inline-flex';
-            document.getElementById('uploadText').innerHTML = "Replace or <span>browse again</span>";
+        function onFile() {
+            if (!fi.files[0]) return;
+            document.getElementById('fileName').textContent = fi.files[0].name;
+            document.getElementById('fileChip').style.display = 'inline-flex';
+            document.getElementById('dropLabel').innerHTML = 'Replace or <span>browse again</span>';
         }
 
-        /* ════════ Analyze ════════════════════════════ */
-        async function analyzePitch() {
-            const btn     = document.getElementById('analyzeBtn');
+        /* ── Analyze ────────────────────────────────────────── */
+        async function run() {
+            if (!fi.files[0]) { alert('Please select an audio file first!'); return; }
+            const btn = document.getElementById('analyzeBtn');
+            const loader = document.getElementById('loader');
             const results = document.getElementById('results');
-            const loading = document.getElementById('loading');
 
-            if (!fileInput.files[0]) { alert('Please select an audio file first!'); return; }
+            loader.style.display = 'flex'; results.style.display = 'none'; btn.disabled = true;
+            btn.innerHTML = `<svg style="animation:spin 1s linear infinite" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="3" opacity=".3"/><path stroke-linecap="round" stroke-width="3" d="M12 2a10 10 0 0110 10" opacity=".8"/></svg><span>Processing…</span>`;
 
-            loading.style.display = 'flex';
-            results.style.display = 'none';
-            btn.disabled = true;
-            btn.innerHTML = `
-                <svg style="animation:spin 1s linear infinite" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" stroke-width="3" opacity=".25"/>
-                    <path stroke-linecap="round" stroke-width="3" d="M12 2a10 10 0 0110 10" opacity=".75"/>
-                </svg>
-                <span>Processing…</span>`;
-
-            const fd = new FormData();
-            fd.append('file', fileInput.files[0]);
-
+            const fd = new FormData(); fd.append('file', fi.files[0]);
             try {
-                const url = API_BASE_URL.endsWith('/') ? `${API_BASE_URL}analyze-pitch` : `${API_BASE_URL}/analyze-pitch`;
+                const url = API_BASE_URL.replace(/\/$/, '') + '/analyze-pitch';
                 const res = await fetch(url, { method: 'POST', body: fd });
-                if (!res.ok) throw new Error(`Server Error ${res.status}: ${await res.text()}`);
-                const data = await res.json();
-
-                document.getElementById('transcriptText').innerText = data.transcript;
-                document.getElementById('feedbackText').innerText   = data.feedback;
-
-                const audioUrl = API_BASE_URL.endsWith('/') ? `${API_BASE_URL}${data.audio_path.substring(1)}` : `${API_BASE_URL}${data.audio_path}`;
-                document.getElementById('audioFeedback').src = audioUrl;
-
+                if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+                const d = await res.json();
+                document.getElementById('transcriptText').innerText = d.transcript;
+                document.getElementById('feedbackText').innerText   = d.feedback;
+                document.getElementById('audioEl').src = API_BASE_URL.replace(/\/$/, '') + d.audio_path;
                 results.style.display = 'flex';
-                setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
-            } catch (err) {
-                alert('Error: ' + err.message); console.error(err);
+                setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+            } catch (e) {
+                alert('Error: ' + e.message); console.error(e);
             } finally {
-                loading.style.display = 'none';
-                btn.disabled = false;
+                loader.style.display = 'none'; btn.disabled = false;
                 btn.innerHTML = `<span>Analyze My Pitch</span><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`;
             }
         }
