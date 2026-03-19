@@ -4,96 +4,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Sales Pitch Analyzer</title>
+    <meta name="description" content="AI Sales Pitch Analyzer - Get instant psychological analysis and audio feedback on your sales pitches.">
+    <title>AI Sales Pitch Analyzer | Elevate Your Pitch</title>
+    
+    <!-- Modern Font: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e4eafa',
+                            200: '#cddbfe',
+                            300: '#a3bffa',
+                            400: '#7599f5',
+                            500: '#5272ef',
+                            600: '#3850e3',
+                            700: '#2c3bcc',
+                            800: '#2732a6',
+                            900: '#242e84',
+                            950: '#161a51',
+                        }
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                        'pulse-glow': 'pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'slide-up': 'slide-up 0.5s ease-out',
+                        'fade-in': 'fade-in 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        'slide-up': {
+                            '0%': { transform: 'translateY(20px)', opacity: 0 },
+                            '100%': { transform: 'translateY(0)', opacity: 1 },
+                        },
+                        'fade-in': {
+                            '0%': { opacity: 0 },
+                            '100%': { opacity: 1 },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #030712;
+            color: #f8fafc;
+            /* Smooth background mesh gradient representation */
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(56, 80, 227, 0.12), transparent 40%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.12), transparent 40%),
+                radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.08), transparent 40%);
+        }
+        
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+        
+        .text-gradient {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+        }
+
+        .text-gradient-green {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(135deg, #34d399, #10b981);
+        }
+
+        .upload-zone {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px dashed rgba(148, 163, 184, 0.2);
+        }
+        
+        .upload-zone:hover {
+            border-color: rgba(99, 102, 241, 0.6);
+            background: rgba(99, 102, 241, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.2);
+        }
+        
+        .upload-zone.dragover {
+            border-color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+            transform: scale(1.02);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #ec4899);
+            background-size: 200% 200%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-position: right center;
+            box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            background: #334155;
+            color: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: none;
+        }
+
+        /* Custom Audio Player Styling */
+        audio::-webkit-media-controls-panel {
+            background-color: #1e293b;
+        }
+        audio::-webkit-media-controls-current-time-display,
+        audio::-webkit-media-controls-time-remaining-display {
+            color: #f8fafc;
+        }
+    </style>
 </head>
 
-<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center py-12 px-4">
+<body class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 selection:bg-brand-500 selection:text-white relative font-sans">
 
-    <div class="max-w-2xl w-full bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700">
-        <h1 class="text-3xl font-bold text-center mb-2">🎙️ AI Sales Pitch Coach</h1>
-        <p class="text-slate-400 text-center mb-8">Upload your pitch and get instant psychological analysis and audio
-            feedback.</p>
+    <!-- Decorative floating blobs -->
+    <div class="fixed top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full mix-blend-screen filter blur-[80px] animate-blob z-[-1] pointer-events-none"></div>
+    <div class="fixed top-40 right-10 w-72 h-72 bg-blue-500/20 rounded-full mix-blend-screen filter blur-[80px] animate-blob animation-delay-2000 z-[-1] pointer-events-none"></div>
+    <div class="fixed -bottom-20 left-1/2 w-80 h-80 bg-pink-500/20 rounded-full mix-blend-screen filter blur-[80px] animate-blob animation-delay-4000 translate-x-1/2 z-[-1] pointer-events-none"></div>
+
+    <main class="w-full max-w-3xl glass-panel p-8 sm:p-12 rounded-[2rem] relative z-10 animate-fade-in group">
+        
+        <header class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 mb-6 shadow-xl shadow-indigo-500/20 transform-gpu transition-transform hover:rotate-6">
+                <span class="text-3xl">🎙️</span>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight mb-4">
+                AI Sales Pitch <span class="text-gradient">Coach</span>
+            </h1>
+            <p class="text-slate-400 text-lg max-w-xl mx-auto font-light">
+                Elevate your delivery. Upload your pitch for instant psychological analysis and personalized audio feedback.
+            </p>
+        </header>
 
         <script>
             // Example: "https://ai-sales-pitch-analyzer-abcd.onrender.com"
-            const API_BASE_URL = "https://ai-sales-pitch-analyzer.onrender.com"; // <--- CHANGE THIS LINE!
+            const API_BASE_URL = "https://ai-sales-pitch-analyzer.onrender.com"; // <--- CHANGE THIS LINE IF NEEDED
         </script>
 
-        <div class="space-y-6">
-            <div
-                class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors">
-                <input type="file" id="audioInput" accept="audio/*" class="hidden" onchange="updateFileName()">
-                <label for="audioInput" class="cursor-pointer block">
-                    <span class="text-5xl block mb-4">📁</span>
-                    <span id="uploadText" class="text-lg font-medium text-blue-400">Click to upload audio</span>
-                    <p class="text-sm text-slate-500 mt-2">MP3, M4A, or WAV (Max 10MB)</p>
-                    <p id="fileNameDisplay" class="mt-4 text-md font-bold text-green-400 hidden"></p>
-                </label>
+        <div class="space-y-8">
+            <!-- Upload Area -->
+            <div id="dropZone" class="upload-zone rounded-2xl p-10 text-center cursor-pointer relative overflow-hidden group">
+                <input type="file" id="audioInput" accept="audio/*" class="hidden" onchange="handleFileSelect()">
+                <label for="audioInput" class="cursor-pointer flex flex-col items-center justify-center absolute inset-0 w-full h-full z-10"></label>
+                
+                <div class="relative z-0 pointer-events-none flex flex-col items-center">
+                    <div class="w-20 h-20 rounded-full bg-slate-800/50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                        <svg class="w-10 h-10 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    </div>
+                    <span id="uploadText" class="text-xl font-medium text-slate-200 mb-2">Drag & drop your audio, or <span class="text-indigo-400">browse</span></span>
+                    <p class="text-sm text-slate-500 font-light">Supports MP3, M4A, WAV (Max 10MB)</p>
+                    
+                    <div id="fileInfoDisplay" class="mt-6 flex flex-col items-center hidden animate-slide-up">
+                        <div class="flex items-center space-x-2 text-emerald-400 bg-emerald-400/10 px-4 py-2 rounded-full border border-emerald-400/20">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                            <span id="fileNameDisplay" class="font-medium text-sm truncate max-w-[200px] sm:max-w-xs"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <button onclick="analyzePitch()" id="analyzeBtn"
-                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                Analyze Pitch 🚀
+            <button onclick="analyzePitch()" id="analyzeBtn" class="btn-primary w-full text-white font-bold py-4 px-8 rounded-xl shadow-lg flex items-center justify-center space-x-2 text-lg disabled:opacity-50">
+                <span>Analyze Pitch</span>
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             </button>
         </div>
 
-        <div id="results" class="mt-10 hidden space-y-6">
-            <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-700">
-                <h3 class="text-blue-400 font-bold mb-2 uppercase text-xs tracking-widest">Transcript</h3>
-                <p id="transcriptText" class="text-slate-300 leading-relaxed"></p>
+        <!-- Loading State -->
+        <div id="loading" class="hidden flex-col items-center justify-center mt-12 mb-4 animate-fade-in">
+            <div class="relative w-20 h-20 mb-6">
+                <!-- Outer glowing ring -->
+                <div class="absolute inset-0 rounded-full border-t-2 border-indigo-500 animate-spin"></div>
+                <!-- Inner glowing ring reversing -->
+                <div class="absolute inset-2 rounded-full border-b-2 border-pink-500 animate-spin" style="animation-direction: reverse; animation-duration: 1.5s;"></div>
+                <!-- Center pulse icon -->
+                <div class="absolute inset-0 flex items-center justify-center text-indigo-400 animate-pulse">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg>
+                </div>
             </div>
+            <h3 class="text-xl font-semibold mb-2">Analyzing your delivery...</h3>
+            <p class="text-slate-400 text-sm text-center max-w-sm">
+                Our AI coach is examining your tone, pacing, and psychological triggers. This may take a moment.
+            </p>
+        </div>
 
-            <div class="bg-slate-900/50 p-6 rounded-xl border border-slate-700">
-                <h3 class="text-green-400 font-bold mb-2 uppercase text-xs tracking-widest">AI Coaching Feedback</h3>
-                <p id="feedbackText" class="text-slate-300 leading-relaxed italic"></p>
-                <div class="mt-4 pt-4 border-t border-slate-800">
-                    <p class="text-xs text-slate-500 mb-2">Listen to your Coach:</p>
-                    <audio id="audioFeedback" controls class="w-full h-8"></audio>
+        <!-- Results UI -->
+        <div id="results" class="mt-12 hidden space-y-8 animate-slide-up">
+            <div class="border-t border-slate-700/50 pt-8 mb-4">
+                <h2 class="text-2xl font-bold text-center">Analysis Complete ✨</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-6">
+                <!-- Transcript Card -->
+                <div class="bg-slate-800/40 p-6 sm:p-8 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors shadow-lg relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 rounded bg-indigo-500/20 text-indigo-400 flex items-center justify-center mr-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <h3 class="text-indigo-400 font-bold uppercase text-xs tracking-widest">Transcript</h3>
+                    </div>
+                    <p id="transcriptText" class="text-slate-300 leading-relaxed font-light"></p>
+                </div>
+
+                <!-- Feedback Card -->
+                <div class="bg-slate-800/40 p-6 sm:p-8 rounded-2xl border border-slate-700/50 hover:border-slate-600 transition-colors shadow-lg relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center mr-3">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        </div>
+                        <h3 class="text-emerald-400 font-bold uppercase text-xs tracking-widest">AI Coaching Feedback</h3>
+                    </div>
+                    <p id="feedbackText" class="text-slate-300 leading-relaxed font-light mb-6"></p>
+                    
+                    <div class="pt-6 border-t border-slate-700/50">
+                        <p class="text-xs text-slate-400 mb-3 font-medium uppercase tracking-wider flex items-center">
+                            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span>
+                            Listen to your Coach Audio
+                        </p>
+                        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-700">
+                            <audio id="audioFeedback" controls class="w-full h-10"></audio>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+    </main>
 
-        <div id="loading" class="hidden text-center mt-8">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-            <p class="text-slate-500 mt-2">Coach is listening... This may take a minute on the free tier.</p>
-        </div>
-    </div>
+    <footer class="mt-12 text-center text-slate-500 text-sm font-light z-10 animate-fade-in" style="animation-delay: 0.2s;">
+        <p>Built for ambitious sales professionals. Powered by AI.</p>
+    </footer>
 
     <script>
-        function updateFileName() {
-            const fileInput = document.getElementById('audioInput');
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('audioInput');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight() {
+            dropZone.classList.remove('dragover');
+        }
+
+        dropZone.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        }
+
+        function handleFileSelect() {
             const fileNameDisplay = document.getElementById('fileNameDisplay');
+            const fileInfoDisplay = document.getElementById('fileInfoDisplay');
             const uploadText = document.getElementById('uploadText');
 
             if (fileInput.files.length > 0) {
                 const fileName = fileInput.files[0].name;
-                fileNameDisplay.innerText = "✅ Selected: " + fileName;
-                fileNameDisplay.classList.remove('hidden');
-                uploadText.innerText = "Change file";
+                fileNameDisplay.innerText = fileName;
+                fileInfoDisplay.classList.remove('hidden');
+                uploadText.innerHTML = "Upload another file or <span class='text-indigo-400'>browse</span>";
             }
         }
 
         async function analyzePitch() {
-            const fileInput = document.getElementById('audioInput');
             const btn = document.getElementById('analyzeBtn');
             const results = document.getElementById('results');
             const loading = document.getElementById('loading');
 
             if (!fileInput.files[0]) {
+                // Shake button animation or simple alert
                 alert("Please select an audio file first!");
                 return;
             }
 
+            // Scroll to loading smooth behavior
             loading.classList.remove('hidden');
+            loading.classList.add('flex');
             results.classList.add('hidden');
             btn.disabled = true;
+            btn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+            `;
 
             const formData = new FormData();
             formData.append("file", fileInput.files[0]);
 
             try {
-                // Formatting the URL properly
                 const url = API_BASE_URL.endsWith('/') ? `${API_BASE_URL}analyze-pitch` : `${API_BASE_URL}/analyze-pitch`;
 
                 const response = await fetch(url, {
@@ -108,6 +367,7 @@
 
                 const data = await response.json();
 
+                // Formatting text properly (preserving line breaks if mostly plain text)
                 document.getElementById('transcriptText').innerText = data.transcript;
                 document.getElementById('feedbackText').innerText = data.feedback;
 
@@ -116,12 +376,23 @@
                 audioPlayer.src = audioUrl;
 
                 results.classList.remove('hidden');
+                
+                // Smooth scroll to results
+                setTimeout(() => {
+                    results.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+
             } catch (error) {
                 alert("Error connecting to server. Make sure your Render backend is Live. Details: " + error.message);
                 console.error(error);
             } finally {
                 loading.classList.add('hidden');
+                loading.classList.remove('flex');
                 btn.disabled = false;
+                btn.innerHTML = `
+                    <span>Analyze Pitch</span>
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                `;
             }
         }
     </script>
